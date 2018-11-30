@@ -13,7 +13,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="12dp"
         android:background="#FFFFFF"
         android:orientation="vertical"
         android:padding="10dp">
@@ -73,35 +72,26 @@
                 android:layout_height="match_parent"
                 android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/_lblSoLuong"
-                    android:layout_width="75dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="SL :" />
-
                 <EditText
                     android:id="@+id/txtSoLuong"
-                    android:layout_width="100dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:ems="10"
-                    android:inputType="number" />
-
-                <TextView
-                    android:id="@+id/_lblDonGia"
-                    android:layout_width="75dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Đơn Giá :" />
+                    android:hint="Số Lượng"
+                    android:inputType="number"
+                    android:imeOptions="actionNext"/>
 
                 <EditText
                     android:id="@+id/txtDonGia"
-                    android:layout_width="100dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:ems="10"
-                    android:inputType="number" />
+                    android:hint="Đơn Giá"
+                    android:imeOptions="actionDone"
+                    android:inputType="numberDecimal" />
+
             </LinearLayout>
 
         </TableLayout>
@@ -118,14 +108,14 @@
             android:textSize="20sp"
             android:textStyle="bold" />
 
+        <ListView
+            android:id="@+id/_listviewMatHang"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true" />
+
 
     </LinearLayout>
-
-    <ListView
-        android:id="@+id/_listviewMatHang"
-        android:layout_width="match_parent"
-        android:layout_height="250dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"/>
 
 </RelativeLayout>

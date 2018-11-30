@@ -21,7 +21,7 @@ public class MatHangDAO {
         try {
             String sqlSelect = "SELECT * FROM tblMatHang WHERE SUBSTRING(MaMatH,1,3) = '"+ _maLoai +"'";
             if(_maLoai == "DAU")
-                sqlSelect = "SELECT * FROM tblMatHang WHERE SUBSTRING(MaMatH,1,3) = 'DAI' OR SUBSTRING(MaMatH,1,3) = '\"+ _maLoai +\"'";
+                sqlSelect = "SELECT * FROM tblMatHang WHERE SUBSTRING(MaMatH,1,3) = 'DAI' OR SUBSTRING(MaMatH,1,3) = 'DAU'";
             PreparedStatement statement = _con.prepareStatement(sqlSelect);
             _rs = statement.executeQuery();
 
