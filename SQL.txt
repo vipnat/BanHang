@@ -1,0 +1,16 @@
+
+
+
+CREATE PROCEDURE [dbo].[getMatHangByID]
+	@MaMH nvarchar(20)
+as
+BEGIN
+	SELECT * FROM tblMatHang WHERE MaMatH = @MaMH
+END
+
+CREATE PROCEDURE selectMatHangByLoai
+@MaMH nvarchar(20)
+AS
+BEGIN
+	SELECT * FROM tblMatHang WHERE SUBSTRING(MaMatH,1,3) = @MaMH
+END
