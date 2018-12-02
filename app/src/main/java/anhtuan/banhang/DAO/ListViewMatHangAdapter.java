@@ -10,14 +10,15 @@ import android.widget.TextView;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
-import anhtuan.banhang.DTO.MatHangDTO;
+import anhtuan.banhang.DTO.MatHang;
 import anhtuan.banhang.R;
 
 public class ListViewMatHangAdapter extends ArrayAdapter {
     Activity activity;//activity chứa listview
-    ArrayList<MatHangDTO> myArray = null;
+    ArrayList<MatHang> myArray = null;
     int layoutId;
-    public ListViewMatHangAdapter(Activity activity,int layoutId, ArrayList<MatHangDTO> _arayList) {
+
+    public ListViewMatHangAdapter(Activity activity, int layoutId, ArrayList<MatHang> _arayList) {
         super(activity, 0, _arayList);
         this.activity = activity;
         this.layoutId = layoutId;
@@ -39,12 +40,14 @@ public class ListViewMatHangAdapter extends ArrayAdapter {
         TextView tvTTien = (TextView) convertView.findViewById(R.id._lblTong);
 
         //hiển thị dư liệu lên từng item của listview ở vị trí position
-        MatHangDTO matHang = myArray.get(position);
+        MatHang matHang = myArray.get(position);
         tvTen.setText(matHang.getMaMatH());
-        tvSL.setText(Integer.parseInt(matHang.getSoLuong().toString()));
-        tvGia.setText(Integer.parseInt(matHang.getDonGia().toString()));
-        String dTong = (new DecimalFormat("#,###.##")).format(matHang.getSoLuong() * matHang.getDonGia());
-        tvTTien.setText(dTong);
+        String strSL = (new DecimalFormat("##")).format(matHang.getSoLuong());
+        tvSL.setText(strSL);
+        double dbDonGia = matHang.getDonGia() * 1;
+        tvGia.setText(dbDonGia - (int) dbDonGia > 0 ? dbDonGia + "" : (int) dbDonGia + "");
+        double tongTien = matHang.getSoLuong() * matHang.getDonGia();
+        tvTTien.setText(tongTien != (int) tongTien ? tongTien + "" : (int) tongTien + "");
 
         return convertView;//trả về 1 view khi đã thiết đặt xong
     }

@@ -1,7 +1,9 @@
 package anhtuan.banhang.DTO;
 
 
-public class MatHangDTO {
+import java.util.Comparator;
+
+public class MatHang {
     String MaMatH;
     String TenMatH;
     Float SoLuong;
@@ -35,22 +37,24 @@ public class MatHangDTO {
         return SoLuong;
     }
 
-    public void setSoLuong(Float soLuong) {
-        SoLuong = soLuong;
+    public void setSoLuong(float soLuong) {
+        this.SoLuong = soLuong;
     }
 
-    public MatHangDTO(String MaMh, String TenMH,Float SL, Float Dgia) {
+    public MatHang(String MaMh, String TenMH, Float SL, Float Dgia) {
         super();
         this.MaMatH = MaMh;
         this.TenMatH = TenMH;
         this.SoLuong = SL;
         this.DonGia = Dgia;
     }
-    public MatHangDTO() {
+    public MatHang() {
         super();
     }
 
     public String toString() {
         return this.MaMatH+" - "+this.TenMatH;
     }
+
+
 }
