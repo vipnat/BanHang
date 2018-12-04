@@ -35,8 +35,6 @@ public class KhachHang {
         TenKH = tenKH;
     }
 
-
-
     public String getDiaChi() {
         return DiaChi;
     }
@@ -44,8 +42,6 @@ public class KhachHang {
     public void setDiaChi(String diaChi) {
         DiaChi = diaChi;
     }
-
-
 
     public String getDienThoai() {
         return DienThoai;
@@ -55,8 +51,6 @@ public class KhachHang {
         DienThoai = dienThoai;
     }
 
-
-
     public String getMaKH() {
         return MaKH;
     }
@@ -64,7 +58,6 @@ public class KhachHang {
     public void setMaKH(String maKH) {
         MaKH = maKH;
     }
-
 
     @Override
     public String toString() {

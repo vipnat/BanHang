@@ -43,4 +43,30 @@ public class ConnectionDB {
         return conn;
     }
 
+    public boolean checkConnecDatabase(){
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
+                .permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+        Connection conn = null;
+        String ConnURL = null;
+        try {
+
+            Class.forName(classs);
+            ConnURL = "jdbc:jtds:sqlserver://" + ip + ";"
+                    + "databaseName=" + db + ";user=" + un + ";password="
+                    + password + ";";
+            conn = DriverManager.getConnection(ConnURL);
+            return  true;
+        } catch (SQLException se) {
+            Log.e("ERRO", se.getMessage());
+            return false;
+        } catch (ClassNotFoundException e) {
+            Log.e("ERRO", e.getMessage());
+            return false;
+        } catch (Exception e) {
+            Log.e("ERRO", e.getMessage());
+            return false;
+        }
+    }
+
 }

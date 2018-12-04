@@ -4,20 +4,20 @@ import android.Manifest;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Typeface;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -25,34 +25,32 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import android.app.Activity; // Loại Bỏ Header Mặc Định
-import android.view.Window; // Loại Bỏ Header Mặc Định
-
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
-import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfImportedPage;
+import com.itextpdf.text.pdf.PdfName;
+import com.itextpdf.text.pdf.PdfNumber;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfPage;
+import com.itextpdf.text.pdf.PdfPageEventHelper;
+import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfWriter;
-
-import net.sourceforge.jtds.jdbc.DateTime;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -61,17 +59,18 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import anhtuan.banhang.DAO.HoaDonXuatDAO;
 import anhtuan.banhang.DAO.KhachHangDAO;
 import anhtuan.banhang.DAO.ListViewMatHangAdapter;
 import anhtuan.banhang.DAO.MatHangDAO;
-import anhtuan.banhang.DAO.SuLyHoaDonMua;
+import anhtuan.banhang.DAO.NhanVienDAO;
 import anhtuan.banhang.DTO.DanhSachMatHang;
+import anhtuan.banhang.DTO.HoaDonXuat;
 import anhtuan.banhang.DTO.KhachHang;
 import anhtuan.banhang.DTO.MatHang;
+import anhtuan.banhang.DTO.NhanVien;
 
-import static anhtuan.banhang.R.font.times;
-
-public class MainActivity extends Activity {
+public class XuatHoaDonActivity extends AppCompatActivity{
     RadioGroup _grRadio;
     RadioButton _rdoSanPham;
     RadioButton _rdoDay;
@@ -82,9 +81,10 @@ public class MainActivity extends Activity {
     TextView lblSoLuong;
     TextView lblTongTien;
 
-    Button btnLoad;
-    Button btnPrint;
-    Button btnView;
+    ImageButton btnThem;
+    ImageButton btnXuatHD;
+    ImageButton btnPrint;
+    ImageView imgView;
 
     Spinner _spinMatHang;
     Spinner _spinKH;
@@ -112,34 +112,56 @@ public class MainActivity extends Activity {
     MatHangDAO _matHangDAO = new MatHangDAO();
     KhachHang _khachHang = new KhachHang();
     KhachHangDAO _khachHangDAO = new KhachHangDAO();
-    SuLyHoaDonMua _sulyHoaDon = new SuLyHoaDonMua();
+    NhanVien nhanVien = new NhanVien();
+    NhanVienDAO _nhanVienDAO = new NhanVienDAO();
+    HoaDonXuatDAO hoaDonXuatDAO = new HoaDonXuatDAO();
+    HoaDonXuat hoaDonXuat = new HoaDonXuat();
+
 
     DanhSachMatHang dsMatHang = new DanhSachMatHang();
     int intSelectSpinMHPosition = 0;
 
     String pathPDF = Environment.getExternalStorageDirectory().getAbsolutePath() + "/LuuHoaDon";
+    String path_a5_clear = pathPDF + "/a5_clear.pdf";
+    String path_a4_print = pathPDF + "/a4_print.pdf";
     String strMaHoaDon = "";
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_xuat_hoa_don);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);// Không Tự Động Chọn EditText
+        //this.requestWindowFeature(Window.FEATURE_NO_TITLE);  // Không Tittle
+        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();  // Đọc Ghi PDF
+        StrictMode.setVmPolicy(builder.build());  // Đọc Ghi PDF
 
-        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
-        StrictMode.setVmPolicy(builder.build());
-
-        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.activity_main);
-        // Cấp Quyền Đọc Ghi Cho App
+        // ? Cấp Quyền Đọc Ghi Cho App
         checkAndRequestPermissions();
         if (!isExternalStorageReadable())
             return;
 
+        getDataFromLogin();
+        hoaDonXuatDAO.XoaAllHoaDonXuatNull();
         strMaHoaDon = taoMoiHoaDon();
+
+        hoaDonXuat.setMaHD(strMaHoaDon);
+        hoaDonXuat.setMaNhanVien(nhanVien.getMaNhanVien());
+        hoaDonXuat.setGhiChu(" ");
+        hoaDonXuat.setNgayXuat(new Date());
+        hoaDonXuat.setTongTien(0.0);
+        hoaDonXuat.setTongTienGoc(0.0);
+
+
+        hoaDonXuatDAO.ThemHoaDonXuat(hoaDonXuat);
 
         getControl();
         addEventForm();
+    }
 
+    private void getDataFromLogin() {
+        String getDataLogin = getIntent().getStringExtra(DangNhapActivity.KEY_DATA);
+        nhanVien = _nhanVienDAO.LayThongTinNhanVienTheoMa(getDataLogin);
     }
 
     private String taoMoiHoaDon() {
@@ -151,7 +173,7 @@ public class MainActivity extends Activity {
         int year = c.get(Calendar.YEAR);
         String getDay = (new DecimalFormat("#00")).format(dayNow);
         String getMonth = (new DecimalFormat("#00")).format(month);
-        return _sulyHoaDon.LayMaHoaDonTheoNgay(getDay + getMonth + year + "");
+        return hoaDonXuatDAO.LayMaHoaDonTheoNgay(getDay + getMonth + year + "");
     }
 
     private void getControl() {
@@ -173,9 +195,15 @@ public class MainActivity extends Activity {
         lblSoLuong = (TextView) findViewById(R.id._lblSoLuong);
         lblTongTien = (TextView) findViewById(R.id._lblTongTien);
 
-        btnLoad = (Button) findViewById(R.id.btnLoad);
-        btnPrint = (Button) findViewById(R.id.bntPrint);
-        btnView = (Button) findViewById(R.id.bntView);
+        btnThem = (ImageButton) findViewById(R.id.btnThem);
+        btnThem.setImageResource(R.drawable.image_add);
+        btnXuatHD = (ImageButton) findViewById(R.id.btn_xuatHD);
+        btnXuatHD.setImageResource(R.drawable.image_save_pdf);
+        btnPrint = (ImageButton) findViewById(R.id.btn_print);
+        btnPrint.setImageResource(R.drawable.image_print);
+
+        imgView = (ImageView)findViewById(R.id.imageViewXH) ;
+        imgView.setImageResource(R.drawable.image_xuat_hang);
 
         // Cấu Hình Cho Spiner Khách Hàng
         arrayKhachHang = _khachHangDAO.getArrKhachHang();
@@ -205,13 +233,14 @@ public class MainActivity extends Activity {
                 dsMatHang.deleteMatHangList(matHang);
                 //Mỗi lần thêm xong thì cập nhập lại ListView
                 loadListMatHangByDanhSach(dsMatHang);
-                Toast.makeText(MainActivity.this, "Đã Xóa " + matHang, Toast.LENGTH_LONG).show();
+                Toast.makeText(XuatHoaDonActivity.this, "Đã Xóa " + matHang, Toast.LENGTH_LONG).show();
                 setThongTinKetQua();
+                if (arayListView.size() <= 0) {
+                    _spinKH.setEnabled(true);
+                }
                 return false;
             }
         });
-
-
     }
 
     private void addEventForm() {
@@ -271,51 +300,84 @@ public class MainActivity extends Activity {
         //
         // Click Button Add
         //
-        btnLoad.setOnClickListener(new View.OnClickListener() {
+        btnThem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 _matHang = arrayMH.get(intSelectSpinMHPosition);
                 String textSL = _txtsoLuong.getText().toString();
                 String textGia = _txtdonGia.getText().toString();
                 if (textSL.length() == 0 || textGia.length() == 0) {
-                    Toast.makeText(MainActivity.this, "Số Lượng, Đơn Giá Phải > 0 ", Toast.LENGTH_LONG).show();
+                    Toast.makeText(XuatHoaDonActivity.this, "Số Lượng, Đơn Giá Phải > 0 ", Toast.LENGTH_LONG).show();
                     return;
                 }
                 Integer intSoLuong = Integer.parseInt(textSL);
                 if (intSoLuong > _matHangDAO.getMatHangByID(_matHang.getMaMatH()).getSoLuong()) {
-                    Toast.makeText(MainActivity.this, "Số Lượng Không Đủ", Toast.LENGTH_LONG).show();
+                    Toast.makeText(XuatHoaDonActivity.this, "Số Lượng Không Đủ", Toast.LENGTH_LONG).show();
                     return;
                 }
                 Float fGiaban = Float.parseFloat(textGia);
                 if (fGiaban <= 0) {
-                    Toast.makeText(MainActivity.this, "Giá Bán Phải > 0", Toast.LENGTH_LONG).show();
+                    Toast.makeText(XuatHoaDonActivity.this, "Giá Bán Phải > 0", Toast.LENGTH_LONG).show();
                     return;
                 }
-
                 _matHang.setSoLuong(intSoLuong);
                 _matHang.setDonGia(fGiaban);
                 addMatHangForListView();
                 setThongTinKetQua();
+
+                if (arayListView.size() > 0) _spinKH.setEnabled(false);
+
+                TaoFilePDFA5Null();
+                Toast.makeText(XuatHoaDonActivity.this, "Đã Mua " + (int) (double) _matHang.getSoLuong() + " dây\n" + _matHang, Toast.LENGTH_LONG).show();
             }
         });
 
         //
         //Button Print On Click
         //
-        btnPrint.setOnClickListener(new View.OnClickListener() {
+        btnXuatHD.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                XuatHoaDonPDF();
+                if (arayListView.size() <= 0) {
+                    Toast.makeText(XuatHoaDonActivity.this, "Chưa Có Sản Phẩm !", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                try {
+                    XuatHoaDonPDF();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (DocumentException e) {
+                    e.printStackTrace();
+                }
+                // Xóa Dữ Liệu Cũ Nếu Có
+                hoaDonXuatDAO.DeleteDuLieuMuaDB(hoaDonXuat.getMaHD());
+                // Cập Nhập Lại Tổng Tiền
+                hoaDonXuat.setTongTien((double) dsMatHang.getTongTienList());
+                hoaDonXuat.setTongTienGoc(hoaDonXuatDAO.LayTongTienGocCuaHD(arayListView));
+                hoaDonXuatDAO.UpdateTTHoaDonXuat(hoaDonXuat);
+                // Thêm Dữ Liệu Mới Xuống Database
+                hoaDonXuatDAO.InsertDuLieuMuaDB(arayListView,hoaDonXuat,_khachHang);
+
             }
         });
 
         //
         // Button View PDF Click
         //
-        btnView.setOnClickListener(new View.OnClickListener() {
+        btnPrint.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openPdf();
+                String filePathHoaDon = pathPDF + "/" + strMaHoaDon + ".pdf";
+                //openPdf();
+                File fileHoaDon = new File(filePathHoaDon);
+                if (!fileHoaDon.exists()) return;
+                try {
+                    createA4PdfPrint(filePathHoaDon);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (DocumentException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -326,7 +388,7 @@ public class MainActivity extends Activity {
     private void setThongTinKetQua() {
         lblSoLoai.setText(arayListView.size() + " Loại");
         lblSoLuong.setText("SL:" + dsMatHang.getSoLuongMatHang());
-        lblTongTien.setText("+$:" + dsMatHang.getTongTienList());
+        lblTongTien.setText("+$:" + new DecimalFormat("###,###").format(dsMatHang.getTongTienList()).replaceAll(",", "."));
     }
 
     /**
@@ -383,9 +445,12 @@ public class MainActivity extends Activity {
     /**
      * Xuat File PDF
      */
-    private void XuatHoaDonPDF() {
+    private void XuatHoaDonPDF() throws IOException, DocumentException, FileNotFoundException {
         // Update Nợ Cũ
         double dbNoCu = Double.parseDouble(_khachHang.getNoCu());
+        String strNoCu = dbNoCu - (int) dbNoCu > 0 ? dbNoCu + "" : (int) dbNoCu + "";
+        //strNoCu = new DecimalFormat("###,###").format(strNoCu).replaceAll(",", ".");
+
         double dbTraTien = 0;
         if (_txtTraTien.getText().length() > 0)
             dbTraTien = Double.parseDouble(_txtTraTien.getText() + "");
@@ -393,10 +458,15 @@ public class MainActivity extends Activity {
 
         double dbTongTienBan = dsMatHang.getTongTienList();
         String strTongTienBan = dbTongTienBan - (int) dbTongTienBan > 0 ? dbTongTienBan + "" : (int) dbTongTienBan + "";
+        //strTongTienBan = new DecimalFormat("###,###").format(strTongTienBan).replaceAll(",", ".");
 
-        double dbTienConLai = dbTongTienBan + dbNoCu - dbTraTien;
+        double dbTongNo = dbTongTienBan + dbNoCu;
+        String strTongNo = dbTongNo - (int) dbTongNo > 0 ? dbTongNo + "" : (int) dbTongNo + "";
+        //strTongNo = new DecimalFormat("###,###").format(strTongNo).replaceAll(",", ".");
+
+        double dbTienConLai = dbTongNo - dbTraTien;
         String strTienConLai = dbTienConLai - (int) dbTienConLai > 0 ? dbTienConLai + "" : (int) dbTienConLai + "";
-
+        //strTienConLai = new DecimalFormat("###,###").format(strTienConLai).replaceAll(",", ".");
 
         //Get Date Now
         Date date = new Date();
@@ -404,17 +474,9 @@ public class MainActivity extends Activity {
         String ngayBan = frmDate.format(date);
 
         String strFONT = "/res/font/times.ttf";
-        Font font16 = new Font(Font.FontFamily.TIMES_ROMAN, 16);
-        Font font22 = new Font(Font.FontFamily.TIMES_ROMAN, 22);
-        try {
-            BaseFont timesFont = BaseFont.createFont(strFONT, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-            font16 = new Font(timesFont, 16);
-            font22 = new Font(timesFont, 22);
-        } catch (DocumentException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        BaseFont timesFont = BaseFont.createFont(strFONT, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+        Font font16 = new Font(timesFont, 10);
+        Font font22 = new Font(timesFont, 18);
 
 
         // Creating iText Table from title data
@@ -430,7 +492,7 @@ public class MainActivity extends Activity {
         cellTitle.setBorder(0);
         pdfTableTitle.addCell(cellTitle);
 
-        cellTitle = new PdfPCell(new Paragraph("Người Bán  : Anh Tuấn (0915458345)" + "\nKhách Hàng : " + _khachHang.getTenKH() + "\n", font16));
+        cellTitle = new PdfPCell(new Paragraph("Người Bán  : "+ nhanVien.toString() + "\nKhách Hàng : " + _khachHang.getTenKH() + "\n", font16));
         cellTitle.setBorder(0);
         pdfTableTitle.addCell(cellTitle);
         //
@@ -445,11 +507,8 @@ public class MainActivity extends Activity {
         //
         PdfPTable pdfTable = new PdfPTable(5);
         float[] widths = new float[]{1.5f, 5f, 1.5f, 2f, 2f};
-        try {
-            pdfTable.setWidths(widths);
-        } catch (DocumentException e) {
-            e.printStackTrace();
-        }
+        pdfTable.setWidths(widths);
+
         pdfTable.setWidthPercentage(95);
         pdfTable.getDefaultCell().setPadding(3);
         pdfTable.getDefaultCell().setBorder(0);
@@ -461,35 +520,33 @@ public class MainActivity extends Activity {
         PdfPCell cellHeader1 = new PdfPCell(new Phrase("Mã MH", font16));
         cellHeader1.setBackgroundColor(BaseColor.LIGHT_GRAY);
         cellHeader1.setHorizontalAlignment(1);
-        cellHeader1.setFixedHeight(20f);
+        cellHeader1.setFixedHeight(14f);
         pdfTable.addCell(cellHeader1);
 
         PdfPCell cellHeader2 = new PdfPCell(new Phrase("Tên Mặt Hàng", font16));
         cellHeader2.setBackgroundColor(BaseColor.LIGHT_GRAY);
         cellHeader2.setHorizontalAlignment(1);
-        cellHeader2.setFixedHeight(20f);
+        cellHeader2.setFixedHeight(14f);
         pdfTable.addCell(cellHeader2);
 
         PdfPCell cellHeader3 = new PdfPCell(new Phrase("Số Lượng", font16));
         cellHeader3.setBackgroundColor(BaseColor.LIGHT_GRAY);
         cellHeader3.setHorizontalAlignment(1);
-        cellHeader3.setFixedHeight(20f);
+        cellHeader3.setFixedHeight(14f);
         pdfTable.addCell(cellHeader3);
 
         PdfPCell cellHeader4 = new PdfPCell(new Phrase("Đơn Giá", font16));
         cellHeader4.setBackgroundColor(BaseColor.LIGHT_GRAY);
         cellHeader4.setHorizontalAlignment(1);
-        cellHeader4.setFixedHeight(20f);
+        cellHeader4.setFixedHeight(14f);
         pdfTable.addCell(cellHeader4);
 
         PdfPCell cellHeader5 = new PdfPCell(new Phrase("Tổng Tiền", font16));
         cellHeader5.setBackgroundColor(BaseColor.LIGHT_GRAY);
         cellHeader5.setHorizontalAlignment(1);
-        cellHeader5.setFixedHeight(20f);
+        cellHeader5.setFixedHeight(14f);
         pdfTable.addCell(cellHeader5);
 
-
-        int maSP = 0;
         //Adding ListView Row
         for (MatHang mh : arayListView) {
             for (int i = 1; i <= 5; i++) {
@@ -497,33 +554,33 @@ public class MainActivity extends Activity {
                 switch (i) {
                     case 1: // Lấy Mã Sản Phẩm
                         _cellPDF = new PdfPCell(new Phrase(mh.getMaMatH().substring(3), font16));
-                        _cellPDF.setFixedHeight(20f);
+                        _cellPDF.setFixedHeight(14f);
                         _cellPDF.setHorizontalAlignment(Element.ALIGN_CENTER);
                         pdfTable.addCell(_cellPDF);
                         break;
                     case 2:  // Lấy Tên Sản Phẩm
                         _cellPDF = new PdfPCell(new Phrase(mh.getTenMatH(), font16));
-                        _cellPDF.setFixedHeight(20f);
+                        _cellPDF.setFixedHeight(14f);
                         _cellPDF.setHorizontalAlignment(Element.ALIGN_CENTER);
                         pdfTable.addCell(_cellPDF);
                         break;
                     case 3: // Lấy Số Lượng
                         _cellPDF = new PdfPCell(new Phrase((new DecimalFormat("##")).format(mh.getSoLuong()), font16));
-                        _cellPDF.setFixedHeight(20f);
+                        _cellPDF.setFixedHeight(14f);
                         _cellPDF.setHorizontalAlignment(Element.ALIGN_CENTER);
                         pdfTable.addCell(_cellPDF);
                         break;
                     case 4:  // Lấy Đơn Giá
                         double dbDonGia = mh.getDonGia();
                         _cellPDF = new PdfPCell(new Phrase(dbDonGia - (int) dbDonGia > 0 ? dbDonGia + "" : (int) dbDonGia + "", font16));
-                        _cellPDF.setFixedHeight(20f);
+                        _cellPDF.setFixedHeight(14f);
                         _cellPDF.setHorizontalAlignment(Element.ALIGN_CENTER);
                         pdfTable.addCell(_cellPDF);
                         break;
                     case 5: // Thành Tiền
                         double thanhTien = mh.getSoLuong() * mh.getDonGia();
                         _cellPDF = new PdfPCell(new Phrase(thanhTien - (int) thanhTien > 0 ? thanhTien + "" : (int) thanhTien + "", font16));
-                        _cellPDF.setFixedHeight(20f);
+                        _cellPDF.setFixedHeight(14f);
                         _cellPDF.setHorizontalAlignment(Element.ALIGN_CENTER);
                         pdfTable.addCell(_cellPDF);
                         break;
@@ -542,11 +599,7 @@ public class MainActivity extends Activity {
         //
         PdfPTable pdfTableTongTien = new PdfPTable(5);
         float[] widthsTT = new float[]{1.5f, 5f, 1.5f, 2f, 2f};
-        try {
-            pdfTableTongTien.setWidths(widthsTT);
-        } catch (DocumentException e) {
-            e.printStackTrace();
-        }
+        pdfTableTongTien.setWidths(widthsTT);
         pdfTableTongTien.setWidthPercentage(95);
         pdfTableTongTien.getDefaultCell().setBorder(0);
 
@@ -560,7 +613,7 @@ public class MainActivity extends Activity {
             _cellPDFTT.setHorizontalAlignment(Element.ALIGN_RIGHT);
             _cellPDFTT.setBorder(0);
             pdfTableTongTien.addCell(_cellPDFTT);
-            pdfTableTongTien.addCell(new Phrase("\n" + strTongTienBan + "\n" + dbNoCu + "\n" + (dbTongTienBan + dbNoCu) + "\n" + strTraTien + "\n\n" + strTienConLai, font16));
+            pdfTableTongTien.addCell(new Phrase("\n" + strTongTienBan + "\n" + strNoCu + "\n" + strTongNo + "\n" + strTraTien + "\n\n" + strTienConLai, font16));
         } else {
             PdfPCell _cellPDFTT = new PdfPCell(new Phrase("\nTổng Toa : \nTrả           : \n------------- \nCòn          :", font16));
             _cellPDFTT.setHorizontalAlignment(Element.ALIGN_RIGHT);
@@ -572,58 +625,45 @@ public class MainActivity extends Activity {
         //
         //Exporting to PDF
         //
-        String pathLuu = pathPDF;
-
-        File folderPath = new File(pathLuu);
+        File folderPath = new File(pathPDF);
         if (!folderPath.exists())
             folderPath.mkdirs();
 
         File pdfHoaDon = new File(folderPath, strMaHoaDon + ".pdf");
         // Kiểm Tra Tồn Tại
         if (pdfHoaDon.exists()) {
-            try {
-                pdfHoaDon.delete(); // Xóa
-            } catch (Exception ex) {
-                Toast.makeText(MainActivity.this, "Xóa Hóa Đơn Tạo Lại.", Toast.LENGTH_LONG).show();
-                return;
-            }
+            pdfHoaDon.delete(); // Xóa
         }
 
         Document pdfDoc = new Document(PageSize.A5, 10f, 10f, 15f, 30f);
-        pdfDoc.setPageSize(PageSize.LETTER);  // A5 Dọc
+        //pdfDoc.setPageSize(PageSize.LETTER);  // A5 Dọc
 
+        PdfWriter writer = PdfWriter.getInstance(pdfDoc, new FileOutputStream(pdfHoaDon));
 
-        try {
-            PdfWriter.getInstance(pdfDoc, new FileOutputStream(pdfHoaDon));
-        } catch (DocumentException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        Rotate rotation = new Rotate(); // Xoay Ngang
+        writer.setPageEvent(rotation); // Xoay Ngang
+
         pdfDoc.open();
-
+        //rotation.setRotation(PdfPage.SEASCAPE);  // Xoay Ngang Đầu Hướng Sang Trái
         pdfDoc.addAuthor("Anh Tuan");
-        try {
-            pdfDoc.add(pdfTableTitle);
-            pdfDoc.add(pdfTable);
-            pdfDoc.add(pdfTableTongTien);
-        } catch (DocumentException e) {
-            e.printStackTrace();
-        }
-
+        pdfDoc.add(pdfTableTitle);
+        pdfDoc.add(pdfTable);
+        pdfDoc.add(pdfTableTongTien);
         pdfDoc.close();
 
-        Toast.makeText(getApplicationContext(), "Created...Ok", Toast.LENGTH_LONG).show();
-        viewPdf(strMaHoaDon + ".pdf");
-
+        Toast.makeText(getApplicationContext(), "Xuất Hóa Đơn Thành Công !", Toast.LENGTH_LONG).show();
+        viewPdf(pathPDF + "/" + strMaHoaDon + ".pdf");
     }
 
-
     // Method for opening a pdf file
-    private void viewPdf(String file) {
-        File pdfFile = new File(pathPDF + "/" + file);
-        Uri path = Uri.fromFile(pdfFile);
+    private void viewPdf(String filePath) {
+        File pdfFile = new File(filePath);
+        if (!pdfFile.exists()) {
+            Toast.makeText(this, "Chưa Tạo Được File PDF !", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        Uri path = Uri.fromFile(pdfFile);
         // Setting the intent for pdf reader
         Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
         pdfIntent.setDataAndType(path, "application/pdf");
@@ -639,17 +679,6 @@ public class MainActivity extends Activity {
             return;
         }
     }
-
-    // Click Xem Lại PDF Hóa Đơn
-    private void openPdf() {
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        File file = new File(pathPDF, dsMatHang.getTongTienList() + ".pdf");
-        if (!file.exists())
-            Toast.makeText(this, "Không Tồn Tại File \n" + file, Toast.LENGTH_SHORT).show();
-        intent.setDataAndType(Uri.fromFile(file), "application/pdf");
-        startActivity(intent);
-    }
-
 
     private void checkAndRequestPermissions() {
         String[] permissions = new String[]{
@@ -676,4 +705,86 @@ public class MainActivity extends Activity {
         return false;
     }
 
+    public void createA4PdfPrint(String strA5)
+            throws IOException, DocumentException {
+        File fileA4 = new File(path_a4_print);
+        if (fileA4.exists())
+            fileA4.delete();
+        // Creating a reader A5
+        PdfReader reader = new PdfReader(strA5);
+
+        // Creating a reader A5 Null
+        PdfReader readerNull = new PdfReader(path_a5_clear);
+
+        // step 1
+        Document document = new Document(PageSize.A4.rotate());
+        // step 2
+        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(path_a4_print));
+        Rotate rotation = new Rotate(); // Xoay Ngang
+        writer.setPageEvent(rotation); // Xoay Ngang
+
+        // step 3
+        document.open();
+        rotation.setRotation(PdfPage.PORTRAIT);  // Xoay Thẳng Khi Hiển Thị
+        // step 4
+        PdfContentByte canvas = writer.getDirectContent();
+        float a5_width = PageSize.A5.getWidth();
+        int n = reader.getNumberOfPages();
+        int p = 0;
+        PdfImportedPage page = writer.getImportedPage(readerNull, 1);
+        while (p++ < n) {
+            // Thêm Trang Trắng
+            page = writer.getImportedPage(readerNull, 1);
+            canvas.addTemplate(page, 0, 0);
+            // Lấy Và Thêm Trang Hóa Đơn
+            page = writer.getImportedPage(reader, p);
+            canvas.addTemplate(page, a5_width, 0);
+            document.newPage();
+        }
+        // step 5
+        document.close();
+        reader.close();
+        readerNull.close();
+
+        viewPdf(path_a4_print);
+    }
+
+    //
+    // Tạo File PDF A5 Trắng Để Chèn Vào A4
+    //
+    public void TaoFilePDFA5Null() {
+        // Get File
+        File a5_null = new File(path_a5_clear);
+        if (a5_null.exists()) a5_null.delete();
+        // step 1
+        Document document = new Document();
+        // step 2
+        try {
+            PdfWriter.getInstance(document, new FileOutputStream(path_a5_clear));
+            // step 3
+            document.open();
+            // step 4
+            document.add(new Paragraph(" "));
+        } catch (DocumentException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        document.close();
+    }
+
+    //
+    //  Class Xoay File PDF
+    //
+    public class Rotate extends PdfPageEventHelper {
+        protected PdfNumber rotation = PdfPage.PORTRAIT;
+
+        public void setRotation(PdfNumber rotation) {
+            this.rotation = rotation;
+        }
+
+        public void onEndPage(PdfWriter writer, Document document) {
+            writer.addPageDictEntry(PdfName.ROTATE, rotation);
+        }
+    }
 }

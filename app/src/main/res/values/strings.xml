@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">BanHang</string>
+    <string name="name">Name</string>
+    <string name="pass">Pass</string>
 </resources>

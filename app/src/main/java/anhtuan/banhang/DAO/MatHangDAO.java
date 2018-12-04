@@ -63,12 +63,12 @@ public class MatHangDAO {
     public String layGiaBanTheoMHvaKH(String maMatHang, String _strMaKhachHang) {
         String strGiaban = "";
         try {
-            String selectGiaTheoKH = "SELECT [tblMatHang].[DonGia] FROM [tblMatHang] INNER JOIN [tblGiaBan] ON [tblMatHang].MaMatH = [tblGiaBan].MaMatH WHERE [MaKH]='" + _strMaKhachHang + "' AND [tblMatHang].MaMatH = '" + maMatHang + "'";
+            String selectGiaTheoKH = "SELECT [tblGiaBan].[GiaBan] FROM [tblGiaBan] INNER JOIN [tblMatHang] ON [tblMatHang].MaMatH = [tblGiaBan].MaMatH WHERE [MaKH]='" + _strMaKhachHang + "' AND [tblMatHang].MaMatH = '" + maMatHang + "'";
             PreparedStatement statement = _con.prepareStatement(selectGiaTheoKH);
             _rs = statement.executeQuery();
 
             while (_rs.next()) {
-                strGiaban = _rs.getString("DonGia");
+                strGiaban = _rs.getString("GiaBan");
             }
 
         } catch (Exception ex) {

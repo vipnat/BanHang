@@ -11,6 +11,7 @@
         android:layout_weight="1"
         android:text="Mã MH"
         android:textAlignment="viewStart"
+        android:textColor="@android:color/background_dark"
         android:textSize="12sp" />
 
     <TextView
@@ -21,6 +22,7 @@
         android:gravity="center"
         android:text="Số Lượng"
         android:textAlignment="center"
+        android:textColor="@android:color/background_dark"
         android:textSize="20sp" />
 
     <TextView
@@ -30,6 +32,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:text="Giá"
+        android:textColor="@android:color/background_dark"
         android:textSize="20sp" />
 
     <TextView
@@ -39,5 +42,6 @@
         android:layout_weight="3"
         android:gravity="center"
         android:text="T Tiền"
+        android:textColor="@android:color/background_dark"
         android:textSize="20sp" />
 </LinearLayout>

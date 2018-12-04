@@ -1,21 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#282828"
+    android:background="@null"
     android:orientation="vertical"
-    android:padding="10dp">
+    app:srcCompat="@drawable/image_xuat_hang">
+
+    <ImageView
+        android:id="@+id/imageViewXH"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@null"
+        android:scaleType="centerCrop"
+        app:srcCompat="@drawable/image_xuat_hang" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
-        android:background="#FFFFFF"
+        android:background="@null"
         android:orientation="vertical"
-        android:padding="5dp">
+        android:padding="10dp">
 
         <RadioGroup
             android:id="@+id/_groupRdo"
@@ -114,15 +123,13 @@
                     android:selectAllOnFocus="false"
                     android:singleLine="false" />
 
-                <Button
-                    android:id="@+id/btnLoad"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@color/colorPrimaryDark"
-                    android:text="Add"
-                    android:textColor="#000000"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
+                <ImageButton
+                    android:id="@+id/btnThem"
+                    android:layout_width="60dp"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:scaleType="fitCenter"
+                    app:srcCompat="@drawable/image_add" />
 
             </LinearLayout>
 
@@ -154,19 +161,22 @@
                     android:id="@+id/_lblSoLoai"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@android:color/black"
                     android:layout_weight="2" />
 
                 <TextView
                     android:id="@+id/_lblSoLuong"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@android:color/black"
                     android:layout_weight="2" />
 
                 <TextView
                     android:id="@+id/_lblTongTien"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="3" />
+                    android:layout_weight="3"
+                    android:textColor="@android:color/black" />
 
             </LinearLayout>
 
@@ -175,6 +185,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="@null"
                 android:orientation="horizontal">
 
                 <EditText
@@ -186,23 +197,24 @@
                     android:inputType="number"
                     android:textAlignment="center" />
 
-                <Button
-                    android:id="@+id/bntPrint"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                <ImageButton
+                    android:id="@+id/btn_xuatHD"
+                    android:layout_width="70dp"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:text="Print"
-                    android:textAlignment="center"
-                    android:textSize="14sp" />
-                <Button
-                    android:id="@+id/bntView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="View"
-                    android:textAlignment="center"
-                    android:textSize="14sp" />
+                    android:background="@android:color/transparent"
+                    android:scaleType="fitCenter"
+                    app:srcCompat="@drawable/image_save_pdf" />
+
+                <ImageButton
+                    android:id="@+id/btn_print"
+                    android:layout_width="70dp"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:scaleType="fitCenter"
+                    app:srcCompat="@drawable/image_print" />
             </LinearLayout>
+
         </LinearLayout>
 
     </LinearLayout>
