@@ -15,7 +15,8 @@ import java.sql.SQLException;
 public class ConnectionDB {
     String ip = "192.168.1.14";
     String classs = "net.sourceforge.jtds.jdbc.Driver";
-    String db = "BanHangTest";
+    //String db = "BanHangTest";
+    String db = "BanHang";
     String un = "tuan";
     String password = "1";
 

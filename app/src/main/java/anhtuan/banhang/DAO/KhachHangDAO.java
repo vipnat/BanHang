@@ -3,6 +3,7 @@ package anhtuan.banhang.DAO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 import anhtuan.banhang.DTO.KhachHang;
@@ -18,12 +19,11 @@ public class KhachHangDAO {
     KhachHang _khachHang;
 
     public ArrayList<KhachHang> getArrKhachHang() {
-        try
-        {
+        try {
             String sqlSelect = "SELECT * FROM tblKhachHang";
             PreparedStatement pre = _con.prepareStatement(sqlSelect);
             _rs = pre.executeQuery();
-            while (_rs.next()){
+            while (_rs.next()) {
                 _khachHang = new KhachHang();
                 _khachHang.setMaKH(_rs.getString("MaKH"));
                 _khachHang.setTenKH(_rs.getString("TenKH"));
@@ -39,12 +39,11 @@ public class KhachHangDAO {
     }
 
     public KhachHang get_khachHang_by_id(String strId) {
-        try
-        {
-            String sqlSelect = "SELECT * FROM tblKhachHang WHERE MaKH = '"+ strId +"'";
+        try {
+            String sqlSelect = "SELECT * FROM tblKhachHang WHERE MaKH = '" + strId + "'";
             PreparedStatement pre = _con.prepareStatement(sqlSelect);
             _rs = pre.executeQuery();
-            while (_rs.next()){
+            while (_rs.next()) {
 
                 _khachHang = new KhachHang();
                 _khachHang.setMaKH(_rs.getString("MaKH"));
@@ -58,5 +57,16 @@ public class KhachHangDAO {
             _ex = "Exceptions";
         }
         return _khachHang;
+    }
+
+    public void CapNhapNoCuTheoKhachHang(KhachHang khachHang) {
+        try {
+            String sqlUpdate = "UPDATE tblKhachHang SET NoCu='" + khachHang.getNoCu() + "' WHERE MaKH='" + khachHang.getMaKH() + "'";
+            PreparedStatement statement = _con.prepareStatement(sqlUpdate);
+            statement.executeUpdate();
+        } catch (SQLException _ex) {
+            _ex.printStackTrace();
+        }
+
     }
 }

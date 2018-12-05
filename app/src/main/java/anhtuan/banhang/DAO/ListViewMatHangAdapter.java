@@ -44,10 +44,11 @@ public class ListViewMatHangAdapter extends ArrayAdapter {
         tvTen.setText(matHang.getMaMatH());
         String strSL = (new DecimalFormat("##")).format(matHang.getSoLuong());
         tvSL.setText(strSL);
-        double dbDonGia = matHang.getDonGia() * 1;
-        tvGia.setText(dbDonGia - (int) dbDonGia > 0 ? dbDonGia + "" : (int) dbDonGia + "");
+        float fDonGia = new Float(matHang.getDonGia());
+        DecimalFormat fm = new DecimalFormat("#.0");
+        tvGia.setText(fDonGia - (int) fDonGia > 0 ? fm.format(fDonGia).replaceAll(",",".") + "" : (int) fDonGia + "");
         double tongTien = matHang.getSoLuong() * matHang.getDonGia();
-        tvTTien.setText(tongTien != (int) tongTien ? tongTien + "" : (int) tongTien + "");
+        tvTTien.setText(tongTien != (int) tongTien ? fm.format(tongTien).replaceAll(",",".") + "" : (int) tongTien + "");
 
         return convertView;//trả về 1 view khi đã thiết đặt xong
     }
