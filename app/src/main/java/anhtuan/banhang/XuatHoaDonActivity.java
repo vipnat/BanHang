@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -49,9 +48,11 @@ import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -129,7 +130,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
     String path_a5_clear = pathPDF + "/a5_clear.pdf";
     String path_a4_print = pathPDF + "/a4_print.pdf";
     String strMaHoaDon = "";
-
+    File pdfHoaDon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,7 +149,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         getDataFromLogin();
         hoaDonXuatDAO.XoaAllHoaDonXuatNull();
         strMaHoaDon = taoMoiHoaDon();
-
+        pdfHoaDon = new File(pathPDF + "/" + strMaHoaDon + ".pdf");
         hoaDonXuat.setMaHD(strMaHoaDon);
         hoaDonXuat.setMaNhanVien(nhanVien.getMaNhanVien());
         hoaDonXuat.setGhiChu(" ");
@@ -372,6 +373,11 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 // Khóa Trả Tiền Và Xuất Hóa Đơn Khi Tạo Thành Công.
                 _txtTraTien.setEnabled(false);
                 btnXuatHD.setEnabled(false);
+
+                //hoaDonXuatDAO.LuuPdfInDatabase(strMaHoaDon,pdfHoaDon);
+                //hoaDonXuatDAO.UpdatePdfInDatabase(strMaHoaDon,pdfHoaDon);
+
+
             }
         });
 
@@ -533,8 +539,8 @@ public class XuatHoaDonActivity extends AppCompatActivity {
 
         String strFONT = "/res/font/times.ttf";
         BaseFont timesFont = BaseFont.createFont(strFONT, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-        Font font16 = new Font(timesFont, 10);
-        Font font22 = new Font(timesFont, 18);
+        Font font16 = new Font(timesFont, 9);
+        Font font22 = new Font(timesFont, 14);
 
 
         // Creating iText Table from title data
@@ -575,7 +581,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         //
         //Adding Header row
         //
-        BaseColor baseHeader = new BaseColor(240,240,240);
+        BaseColor baseHeader = new BaseColor(240, 240, 240);
 
         PdfPCell cellHeader1 = new PdfPCell(new Phrase("Mã MH", font16));
         cellHeader1.setBackgroundColor(baseHeader);
@@ -613,7 +619,11 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 PdfPCell _cellPDF;
                 switch (i) {
                     case 1: // Lấy Mã Sản Phẩm
-                        _cellPDF = new PdfPCell(new Phrase(mh.getMaMatH().substring(3), font16));
+                        String kieuStr = mh.getMaMatH().substring(0, 3);
+                        if (kieuStr.trim().equals("DAY")) kieuStr = "D";
+                        else if (kieuStr.trim().equals("DAI")) kieuStr = "Đ";
+                        else kieuStr = "";
+                        _cellPDF = new PdfPCell(new Phrase(kieuStr + mh.getMaMatH().substring(3), font16));
                         _cellPDF.setFixedHeight(14f);
                         _cellPDF.setHorizontalAlignment(Element.ALIGN_CENTER);
                         pdfTable.addCell(_cellPDF);
@@ -689,7 +699,6 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         if (!folderPath.exists())
             folderPath.mkdirs();
 
-        File pdfHoaDon = new File(folderPath, strMaHoaDon + ".pdf");
         // Kiểm Tra Tồn Tại
         if (pdfHoaDon.exists()) {
             pdfHoaDon.delete(); // Xóa
@@ -697,7 +706,6 @@ public class XuatHoaDonActivity extends AppCompatActivity {
 
         Document pdfDoc = new Document(PageSize.A5, 10f, 10f, 10f, 10f);
         //pdfDoc.setPageSize(PageSize.LETTER);  // A5 Dọc
-
         PdfWriter writer = PdfWriter.getInstance(pdfDoc, new FileOutputStream(pdfHoaDon));
 
         Rotate rotation = new Rotate(); // Xoay Ngang
@@ -712,7 +720,30 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         pdfDoc.close();
 
         Toast.makeText(getApplicationContext(), "Xuất Hóa Đơn Thành Công !", Toast.LENGTH_LONG).show();
+
+        /*
+        File fileLuuOCung = new File("C:/LuuHoaDon/" + strMaHoaDon + "_.pdf");
+        try {
+            if (pdfHoaDon.exists())
+                copyFile(pdfHoaDon, fileLuuOCung);
+        } catch (IOException e) {
+            Toast.makeText(getApplicationContext(), "Chưa Lưu Được Vào Máy Tính ! \n" + e, Toast.LENGTH_LONG).show();
+        }
+        */
+
+        //hoaDonXuatDAO.LuuPdfInDatabase(pdfHoaDon);
+
         viewPdf(pathPDF + "/" + strMaHoaDon + ".pdf");
+
+    }
+
+    public static void copyFile(File source, File destination) throws IOException {
+        try (FileInputStream inputStream = new FileInputStream(source);
+             FileOutputStream outputStream = new FileOutputStream(destination);) {
+            FileChannel sourceChannel = inputStream.getChannel();
+            FileChannel destinationChannel = outputStream.getChannel();
+            destinationChannel.transferFrom(sourceChannel, 0, sourceChannel.size());
+        }
     }
 
     // Method for opening a pdf file

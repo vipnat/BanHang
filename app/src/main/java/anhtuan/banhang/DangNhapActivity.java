@@ -87,6 +87,8 @@ public class DangNhapActivity extends AppCompatActivity {
 
             }
         });
+
+
     }
 
     private void closeFormDataNull() {

@@ -1,8 +1,10 @@
 package anhtuan.banhang.DAO;
 
-import android.app.LauncherActivity;
 
-import com.itextpdf.text.ListItem;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,7 +14,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+
 
 import anhtuan.banhang.DTO.HoaDonXuat;
 import anhtuan.banhang.DTO.KhachHang;
@@ -24,13 +26,15 @@ public class HoaDonXuatDAO {
     Connection _con = connectionDB.CONN();
     String _ex = "";
     ResultSet _rs;
+    PreparedStatement statement;
+
 
     public String LayMaHoaDonTheoNgay(String DayMonthYear) {
         String MaHD = "";
         int maSo = 1;
         String selectMaHoaDon = "SELECT MaHD FROM tblHoaDonXuat";
         try {
-            PreparedStatement statement = _con.prepareStatement(selectMaHoaDon);
+            statement = _con.prepareStatement(selectMaHoaDon);
             _rs = statement.executeQuery();
             while (_rs.next()) {
                 String getMaHD = _rs.getString("MaHD");
@@ -57,7 +61,7 @@ public class HoaDonXuatDAO {
         String sqlQuery = "SELECT MaHD FROM tblHoaDonXuat WHERE NOT EXISTS (SELECT MaHD FROM tblChiTietHDX WHERE " +
                 "tblHoaDonXuat.MaHD = tblChiTietHDX.MaHD)";  // Có Trong Hóa Đơn Mà Không Có Chi Tiết. (HĐ Ảo)
         try {
-            PreparedStatement statement = _con.prepareStatement(sqlQuery);
+            statement = _con.prepareStatement(sqlQuery);
             _rs = statement.executeQuery();
             while (_rs.next()) {
                 String deleteHDX = "DELETE FROM tblHoaDonXuat WHERE MaHD ='" + _rs.getString("MaHD") + "'";
@@ -75,7 +79,7 @@ public class HoaDonXuatDAO {
         try {
             for (MatHang mh : listMH) {
                 sqlSelect = "SELECT (DonGia*" + mh.getSoLuong() + ")AS TongGoc FROM tblMatHang WHERE MaMatH = N'" + mh.getMaMatH() + "'";
-                PreparedStatement statement = _con.prepareStatement(sqlSelect);
+                statement = _con.prepareStatement(sqlSelect);
                 _rs = statement.executeQuery();
                 while (_rs.next()) {
                     tongTienGoc = tongTienGoc + _rs.getDouble("TongGoc");
@@ -91,7 +95,6 @@ public class HoaDonXuatDAO {
         SimpleDateFormat frmDate = new SimpleDateFormat("MM/dd/yyyy");
         String ngayBan = frmDate.format(new Date()); // Ngày Hiện Tại
         String insertHDX = "insert into tblHoaDonXuat(MaHD,MaNhanVien,NgayXuat,GhiChu) values(N'" + hdx.getMaHD() + "',N'" + hdx.getMaNhanVien() + "',N'" + ngayBan + "',N'" + hdx.getGhiChu() + "')";
-        PreparedStatement statement = null;
         try {
             statement = _con.prepareStatement(insertHDX);
             statement.executeUpdate();
@@ -102,7 +105,6 @@ public class HoaDonXuatDAO {
 
     public void UpdateTTHoaDonXuat(HoaDonXuat hdx) {
         String updateSQL = "UPDATE tblHoaDonXuat SET TongTienGoc ='" + hdx.getTongTienGoc() + "' , TongTien = '" + hdx.getTongTien() + "' WHERE MaHD='" + hdx.getMaHD() + "'";
-        PreparedStatement statement = null;
         try {
             statement = _con.prepareStatement(updateSQL);
             statement.executeUpdate();
@@ -115,8 +117,6 @@ public class HoaDonXuatDAO {
         try {
             String query_SQL = "";
             for (MatHang mh : arayListView) {
-                PreparedStatement statement = null;
-
                 //Thêm vào bảng tblChiTietHDX
                 query_SQL = "insert into tblChiTietHDX(MaMatH,MaHD,SoLuong,DonGia) values(N'" + mh.getMaMatH() + "',N'" + hdx.getMaHD() + "'," + mh.getSoLuong() + "," + mh.getDonGia() + ")";
                 statement = _con.prepareStatement(query_SQL);
@@ -144,7 +144,7 @@ public class HoaDonXuatDAO {
             if (!KiemTraTonTaiTrongChiTietHoaDon(strMaHoaDon))
                 return;
             String query_SQL = "SELECT * FROM tblChiTietHDX WHERE MaHD ='" + strMaHoaDon + "'";
-            PreparedStatement statement = _con.prepareStatement(query_SQL);
+            statement = _con.prepareStatement(query_SQL);
             _rs = statement.executeQuery();
             while (_rs.next()) {
                 //Cập nhật lại Số Lượng cho bảng tblMatHang (Thêm số lượng mặt hàng)
@@ -166,7 +166,7 @@ public class HoaDonXuatDAO {
     public boolean KiemTraTonTaiTrongChiTietHoaDon(String strMaHD) {
         try {
             String sqlSelect = "SELECT MaHD FROM tblChiTietHDX WHERE MaHD ='" + strMaHD + "'";
-            PreparedStatement statement = _con.prepareStatement(sqlSelect);
+            statement = _con.prepareStatement(sqlSelect);
             _rs = statement.executeQuery();
             if (!_rs.next())
                 return false;
@@ -176,6 +176,79 @@ public class HoaDonXuatDAO {
             _ex.printStackTrace();
             return false;
         }
+    }
+
+    public void UpdatePdfInDatabase(String maHD, File pathPDF) {
+        try {
+            int fileLength = (int) pathPDF.length();
+            InputStream stream = (InputStream) new FileInputStream(pathPDF);
+            //String sqlUpdate = "UPDATE tblPDF SET HoaDonPDF = (SELECT BulkColumn FROM OPENROWSET (BULK '" + pathPDF + "', SINGLE_BLOB) a) WHERE MaHD ='" + maHD + "'";
+            String sqlUpdate = "UPDATE tblPDF SET HoaDonPDF =? WHERE MaHD = ?";
+            statement = _con.prepareStatement(sqlUpdate);
+            statement.setBlob(1,stream);
+            statement.setString(2,maHD);
+            //statement.setString(2, maHD);
+            statement.executeUpdate();
+        } catch (SQLException _ex) {
+            _ex.printStackTrace();
+        } catch (FileNotFoundException _ex) {
+            _ex.printStackTrace();
+        }
+    }
+
+    FileInputStream fis = null;
+
+    public void LuuPdfInDatabase(String maHD, File pathPDF) {
+        try {
+            File database_filename = pathPDF;
+            fis = new FileInputStream(database_filename);
+            int fileLength = (int) pathPDF.length();
+            InputStream stream = (InputStream) new FileInputStream(pathPDF);
+            //String sqlInsert = "INSERT INTO tblPDF(MaHD,HoaDonPDF) SELECT '" + maHD + "' AS MaHD,* FROM OPENROWSET(BULK ?, SINGLE_BLOB) AS HoaDonPDF";
+            String sqlInsert = "INSERT INTO tblPDF(MaHD,HoaDonPDF) value ('1234321',?)";
+            statement = _con.prepareStatement(sqlInsert);
+            //statement.setString(1,maHD);
+            statement.setBinaryStream(1,fis,fileLength);
+            //statement.setAsciiStream(1, stream, fileLength);
+            statement.executeUpdate();
+        } catch (SQLException _ex) {
+            _ex.printStackTrace();
+        } catch (FileNotFoundException _ex) {
+            _ex.printStackTrace();
+        }
+    }
+
+
+    protected void Upload(File filePath) {
+        /*
+        try {
+            String filename = Path.GetFileNa(FileUpload1.PostedFile.FileName);
+            string contentType = FileUpload1.PostedFile.ContentType;
+            InputStream stream = (InputStream) new FileInputStream(filePath);
+
+                    byte[] allBytes = Files.readAllBytes(Paths.get(filePathi));
+                    string constr = ConfigurationManager.ConnectionStrings["constr"].ConnectionString;
+                    using (SqlConnection con = new SqlConnection(constr))
+                    {
+                        string query = "insert into tblFiles values (@Name, @ContentType, @Data)";
+                        using (SqlCommand cmd = new SqlCommand(query))
+                        {
+                            cmd.Connection = con;
+                            cmd.Parameters.AddWithValue("@Name", filename);
+                            cmd.Parameters.AddWithValue("@ContentType", contentType);
+                            cmd.Parameters.AddWithValue("@Data", bytes);
+                            con.Open();
+                            cmd.ExecuteNonQuery();
+                            con.Close();
+                        }
+                    }
+                }
+            }
+            Response.Redirect(Request.Url.AbsoluteUri);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        */
     }
 
 }
