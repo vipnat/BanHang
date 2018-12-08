@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -13,8 +14,10 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import java.io.File;
 import java.util.ArrayList;
 
+import anhtuan.banhang.DAO.HoaDonXuatDAO;
 import anhtuan.banhang.DAO.NhanVienDAO;
 import anhtuan.banhang.DTO.NhanVien;
 import anhtuan.banhang.Database.ConnectionDB;
@@ -37,6 +40,8 @@ public class DangNhapActivity extends AppCompatActivity {
 
     public static final String KEY_DATA = "key_data";
     private Context context;
+    HoaDonXuatDAO hoaDonXuatDAO = new HoaDonXuatDAO();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
