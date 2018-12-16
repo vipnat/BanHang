@@ -4,21 +4,50 @@ import android.annotation.SuppressLint;
 import android.os.StrictMode;
 import android.util.Log;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Enumeration;
 
 /**
  * Created by Anh Tuan on 27/11/2018.
  */
 
 public class ConnectionDB {
-    String ip = "192.168.1.14";
+    String ip = "192.168.1.27";
     String classs = "net.sourceforge.jtds.jdbc.Driver";
     //String db = "BanHangTest";
     String db = "BanHang";
     String un = "tuan";
     String password = "1";
+
+    public static void main(String []arg){
+        try {
+            InetAddress i_a = InetAddress.getLocalHost();
+            System.out.println("==== "+i_a.getHostAddress());
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        try {
+            Enumeration<NetworkInterface> eni = NetworkInterface.getNetworkInterfaces();
+            while (eni.hasMoreElements()) {
+                NetworkInterface ni = eni.nextElement();
+                Enumeration<InetAddress> inetAddresses = ni.getInetAddresses();
+                while (inetAddresses.hasMoreElements()) {
+                    InetAddress ia = inetAddresses.nextElement();
+                    System.out.println("-IP-"+ia.getHostAddress());
+                    if(ia.isSiteLocalAddress() && ni.getName().startsWith("wlan"))
+                        System.out.println("\n______"+ia.getHostAddress());
+                    //strIp = ia.getHostAddress();
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 
     @SuppressLint("NewApi")
     public Connection CONN() {
@@ -27,8 +56,8 @@ public class ConnectionDB {
         StrictMode.setThreadPolicy(policy);
         Connection conn = null;
         String ConnURL = null;
+        //ip = getIP();
         try {
-
             Class.forName(classs);
             ConnURL = "jdbc:jtds:sqlserver://" + ip + ";"
                     + "databaseName=" + db + ";user=" + un + ";password="
@@ -42,6 +71,25 @@ public class ConnectionDB {
             Log.e("ERRO", e.getMessage());
         }
         return conn;
+    }
+
+    private String getIP() {
+     String strIp = "";
+        try {
+            Enumeration<NetworkInterface> eni = NetworkInterface.getNetworkInterfaces();
+            while (eni.hasMoreElements()) {
+                NetworkInterface ni = eni.nextElement();
+                Enumeration<InetAddress> inetAddresses = ni.getInetAddresses();
+                while (inetAddresses.hasMoreElements()) {
+                    InetAddress ia = inetAddresses.nextElement();
+                    if(ia.isSiteLocalAddress() && ni.getName().startsWith("wlan"))
+                        strIp = ia.getHostAddress();
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return strIp;
     }
 
     public boolean checkConnecDatabase(){
