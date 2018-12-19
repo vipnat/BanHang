@@ -1,12 +1,15 @@
 package anhtuan.banhang;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.StrictMode;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -84,6 +87,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
     TextView lblSoLoai;
     TextView lblSoLuong;
     TextView lblTongTien;
+    TextView lblMaHoaDon;
 
     ImageButton btnThem;
     ImageButton btnXuatHD;
@@ -147,8 +151,11 @@ public class XuatHoaDonActivity extends AppCompatActivity {
             return;
 
         getDataFromLogin();
+        getControl();
+
         hoaDonXuatDAO.XoaAllHoaDonXuatNull();
         strMaHoaDon = taoMoiHoaDon();
+        lblMaHoaDon.setText(nhanVien.getTenNhanVien() + " - HĐ: " + strMaHoaDon);
         pdfHoaDon = new File(pathPDF + "/" + strMaHoaDon + ".pdf");
         hoaDonXuat.setMaHD(strMaHoaDon);
         hoaDonXuat.setMaNhanVien(nhanVien.getMaNhanVien());
@@ -156,11 +163,8 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         hoaDonXuat.setNgayXuat(new Date());
         hoaDonXuat.setTongTien(0.0);
         hoaDonXuat.setTongTienGoc(0.0);
-
-
         hoaDonXuatDAO.ThemHoaDonXuat(hoaDonXuat);
 
-        getControl();
         addEventForm();
     }
 
@@ -199,6 +203,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         lblSoLoai = (TextView) findViewById(R.id._lblSoLoai);
         lblSoLuong = (TextView) findViewById(R.id._lblSoLuong);
         lblTongTien = (TextView) findViewById(R.id._lblTongTien);
+        lblMaHoaDon = (TextView) findViewById(R.id.lblMaHoaDon);
 
         btnThem = (ImageButton) findViewById(R.id.btnThem);
         btnThem.setImageResource(R.drawable.image_add);
@@ -374,10 +379,6 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 _txtTraTien.setEnabled(false);
                 btnXuatHD.setEnabled(false);
 
-                //hoaDonXuatDAO.LuuPdfInDatabase(strMaHoaDon,pdfHoaDon);
-                //hoaDonXuatDAO.UpdatePdfInDatabase(strMaHoaDon,pdfHoaDon);
-
-
             }
         });
 
@@ -393,6 +394,11 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 if (!fileHoaDon.exists()) return;
                 try {
                     createA4PdfPrint(filePathHoaDon);
+
+                    // Đóng App Khi In Hóa Đơn Sau 10s
+                    handler.postAtTime(runnable, System.currentTimeMillis() + interval);
+                    handler.postDelayed(runnable, interval);
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (DocumentException e) {
@@ -436,6 +442,43 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    // Đong Form Sau 10s
+    private final int interval = 10000; // 10 Second
+    private Handler handler = new Handler();
+    private Runnable runnable = new Runnable() {
+        public void run() {
+            Toast.makeText(XuatHoaDonActivity.this, "Đã Hoàn Thành Hóa Đơn!", Toast.LENGTH_LONG).show();
+            finish();
+        }
+    };
+
+    private void closeForm() {
+        AlertDialog.Builder b = new AlertDialog.Builder(this);
+        b.setTitle("Thông Báo");
+        b.setMessage("Đã Hoàn Thành Hóa Đơn ! Đóng App ?");
+        b.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        });
+        b.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        b.create().show();
+        /*
+        Toast.makeText(this, "Hoàn Thành Xuất Hàng !", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        startActivity(intent);
+        finish();
+        */
     }
 
     private void LayGiaBanLenEditText() {
@@ -720,18 +763,6 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         pdfDoc.close();
 
         Toast.makeText(getApplicationContext(), "Xuất Hóa Đơn Thành Công !", Toast.LENGTH_LONG).show();
-
-        /*
-        File fileLuuOCung = new File("C:/LuuHoaDon/" + strMaHoaDon + "_.pdf");
-        try {
-            if (pdfHoaDon.exists())
-                copyFile(pdfHoaDon, fileLuuOCung);
-        } catch (IOException e) {
-            Toast.makeText(getApplicationContext(), "Chưa Lưu Được Vào Máy Tính ! \n" + e, Toast.LENGTH_LONG).show();
-        }
-        */
-
-        //hoaDonXuatDAO.LuuPdfInDatabase(pdfHoaDon);
 
         viewPdf(pathPDF + "/" + strMaHoaDon + ".pdf");
 

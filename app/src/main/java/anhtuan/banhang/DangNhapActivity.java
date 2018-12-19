@@ -103,7 +103,6 @@ public class DangNhapActivity extends AppCompatActivity {
         intent.addCategory(Intent.CATEGORY_HOME);
         startActivity(intent);
         finish();
-
     }
 
     public boolean isConnected() {

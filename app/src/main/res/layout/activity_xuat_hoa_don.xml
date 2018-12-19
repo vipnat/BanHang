@@ -26,11 +26,19 @@
         android:orientation="vertical"
         android:padding="10dp">
 
+        <TextView
+            android:id="@+id/lblMaHoaDon"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Mã Hóa Đơn"
+            android:textAlignment="center"
+            android:textColor="@color/colorAccent"
+            android:textStyle="bold" />
+
         <RadioGroup
             android:id="@+id/_groupRdo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
             android:orientation="horizontal">
 
             <RadioButton
