@@ -1,6 +1,5 @@
 package anhtuan.banhang.DAO;
 
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -127,10 +126,17 @@ public class HoaDonXuatDAO {
                 statement = _con.prepareStatement(query_SQL);
                 statement.executeUpdate();
 
-                //Cập nhập giá mới cho khách hàng
-                query_SQL = "update [tblGiaBan] set [GiaBan]=" + mh.getDonGia() + " where [MaKH]=N'" + kh.getMaKH() + "' and [MaMatH] =N'" + mh.getMaMatH() + "'";
-                statement = _con.prepareStatement(query_SQL);
-                statement.executeUpdate();
+                // Kiểm Tra Tồn Tại Giá Bán Của Khách Hàng
+                if (!KiemTraTonTaiGiaBan(kh.getMaKH(), mh.getMaMatH())) {
+                    query_SQL = "INSERT INTO tblGiaBan([MaMatH],[MaKH],[GiaBan]) VALUES (N'" + mh.getMaMatH() + "',N'" + kh.getMaKH() + "'," + mh.getDonGia() + ")";
+                    statement = _con.prepareStatement(query_SQL);
+                    statement.executeUpdate();
+                } else {
+                    //Cập nhập giá mới cho khách hàng
+                    query_SQL = "update [tblGiaBan] set [GiaBan]=" + mh.getDonGia() + " where [MaKH]=N'" + kh.getMaKH() + "' and [MaMatH] =N'" + mh.getMaMatH() + "'";
+                    statement = _con.prepareStatement(query_SQL);
+                    statement.executeUpdate();
+                }
             }
             return true;
         } catch (SQLException e) {
@@ -178,6 +184,21 @@ public class HoaDonXuatDAO {
         }
     }
 
+    public boolean KiemTraTonTaiGiaBan(String strMaKH, String strMaMH) {
+        try {
+            String sqlSelect = "SELECT COUNT(*) FROM tblGiaBan WHERE MaMatH ='" + strMaMH + "' AND MaKH = '" + strMaKH + "'";
+            statement = _con.prepareStatement(sqlSelect);
+            _rs = statement.executeQuery();
+            if (!_rs.isBeforeFirst()) {
+                return false;
+            } else
+                return true;
+        } catch (SQLException _ex) {
+            _ex.printStackTrace();
+            return false;
+        }
+    }
+
     public void UpdatePdfInDatabase(String maHD, File pathPDF) {
         try {
             int fileLength = (int) pathPDF.length();
@@ -185,8 +206,8 @@ public class HoaDonXuatDAO {
             //String sqlUpdate = "UPDATE tblPDF SET HoaDonPDF = (SELECT BulkColumn FROM OPENROWSET (BULK '" + pathPDF + "', SINGLE_BLOB) a) WHERE MaHD ='" + maHD + "'";
             String sqlUpdate = "UPDATE tblPDF SET HoaDonPDF =? WHERE MaHD = ?";
             statement = _con.prepareStatement(sqlUpdate);
-            statement.setBlob(1,stream);
-            statement.setString(2,maHD);
+            statement.setBlob(1, stream);
+            statement.setString(2, maHD);
             //statement.setString(2, maHD);
             statement.executeUpdate();
         } catch (SQLException _ex) {
@@ -208,7 +229,7 @@ public class HoaDonXuatDAO {
             String sqlInsert = "INSERT INTO tblPDF(MaHD,HoaDonPDF) value ('1234321',?)";
             statement = _con.prepareStatement(sqlInsert);
             //statement.setString(1,maHD);
-            statement.setBinaryStream(1,fis,fileLength);
+            statement.setBinaryStream(1, fis, fileLength);
             //statement.setAsciiStream(1, stream, fileLength);
             statement.executeUpdate();
         } catch (SQLException _ex) {
