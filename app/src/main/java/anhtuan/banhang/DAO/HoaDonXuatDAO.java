@@ -239,7 +239,6 @@ public class HoaDonXuatDAO {
         }
     }
 
-
     protected void Upload(File filePath) {
         /*
         try {
