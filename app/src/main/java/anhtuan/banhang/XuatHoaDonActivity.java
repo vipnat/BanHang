@@ -268,7 +268,6 @@ public class XuatHoaDonActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 _matHang = arrayMH.get(position);
                 intSelectSpinMHPosition = position;
-
                 LayGiaBanLenEditText();
             }
 
@@ -309,13 +308,15 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 _matHang = arrayMH.get(intSelectSpinMHPosition);
                 String textSL = _txtsoLuong.getText().toString();
                 String textGia = _txtdonGia.getText().toString();
-                if (textSL.length() == 0 || textGia.length() == 0 || textGia.equals(".")) {
+                Integer intSoLuongMua = Integer.parseInt(textSL);
+                if (textSL.length() == 0 || textGia.length() == 0 || textGia.equals(".") || intSoLuongMua == 0) {
                     Toast.makeText(XuatHoaDonActivity.this, "Số Lượng, Đơn Giá Phải > 0 ", Toast.LENGTH_LONG).show();
                     return;
                 }
-                Integer intSoLuong = Integer.parseInt(textSL);
-                if (intSoLuong > _matHangDAO.getMatHangByID(_matHang.getMaMatH()).getSoLuong()) {
-                    Toast.makeText(XuatHoaDonActivity.this, "Số Lượng Không Đủ", Toast.LENGTH_LONG).show();
+
+                MatHang mhAdd = _matHangDAO.getMatHangByID(_matHang.getMaMatH());
+                if (intSoLuongMua > mhAdd.getSoLuong()) {
+                    Toast.makeText(XuatHoaDonActivity.this, "Số Lượng Còn " + mhAdd.getSoLuong() + " - Không Đủ", Toast.LENGTH_LONG).show();
                     return;
                 }
                 Float fGiaban = Float.parseFloat(textGia);
@@ -323,7 +324,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                     Toast.makeText(XuatHoaDonActivity.this, "Giá Bán Phải > 0", Toast.LENGTH_LONG).show();
                     return;
                 }
-                _matHang.setSoLuong(intSoLuong);
+                _matHang.setSoLuong(intSoLuongMua);
                 _matHang.setDonGia(fGiaban);
                 addMatHangForListView();
                 setThongTinKetQua();
