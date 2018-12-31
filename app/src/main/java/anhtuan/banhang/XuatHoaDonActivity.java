@@ -328,7 +328,6 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 _matHang.setDonGia(fGiaban);
                 addMatHangForListView();
                 setThongTinKetQua();
-
                 if (arayListView.size() > 0) _spinKH.setEnabled(false);
 
                 TaoFilePDFA5Null();

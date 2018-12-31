@@ -185,6 +185,7 @@ public class HoaDonXuatDAO {
     }
 
     public boolean KiemTraTonTaiGiaBan(String strMaKH, String strMaMH) {
+
         try {
             String sqlSelect = "SELECT COUNT(*) FROM tblGiaBan WHERE MaMatH ='" + strMaMH + "' AND MaKH = '" + strMaKH + "'";
             statement = _con.prepareStatement(sqlSelect);
