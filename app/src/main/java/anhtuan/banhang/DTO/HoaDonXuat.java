@@ -7,15 +7,15 @@ public class HoaDonXuat {
     String MaNhanVien;
     Date NgayXuat;
     Double TongTien;
-    String GhiChu;
+    String MaKH;
     Double TongTienGoc;
 
-    public HoaDonXuat(String maHD, String maNhanVien, Date ngayXuat, Double tongTien, String ghiChu, Double tongTienGoc) {
+    public HoaDonXuat(String maHD, String maNhanVien, Date ngayXuat, Double tongTien, String maKH, Double tongTienGoc) {
         this.MaHD = maHD;
         this.MaNhanVien = maNhanVien;
         this.NgayXuat = ngayXuat;
         this.TongTien = tongTien;
-        this.GhiChu = ghiChu;
+        this.MaKH = maKH;
         this.TongTienGoc = tongTienGoc;
     }
 
@@ -55,12 +55,12 @@ public class HoaDonXuat {
         TongTien = tongTien;
     }
 
-    public String getGhiChu() {
-        return GhiChu;
+    public String getMaKH() {
+        return MaKH;
     }
 
-    public void setGhiChu(String ghiChu) {
-        GhiChu = ghiChu;
+    public void setMaKH(String maKH) {
+        MaKH = maKH;
     }
 
     public Double getTongTienGoc() {

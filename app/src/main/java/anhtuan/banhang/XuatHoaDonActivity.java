@@ -159,7 +159,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         pdfHoaDon = new File(pathPDF + "/" + strMaHoaDon + ".pdf");
         hoaDonXuat.setMaHD(strMaHoaDon);
         hoaDonXuat.setMaNhanVien(nhanVien.getMaNhanVien());
-        hoaDonXuat.setGhiChu(" ");
+        hoaDonXuat.setMaKH("");
         hoaDonXuat.setNgayXuat(new Date());
         hoaDonXuat.setTongTien(0.0);
         hoaDonXuat.setTongTienGoc(0.0);
@@ -356,6 +356,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 // Cập Nhập Lại Tổng Tiền
                 hoaDonXuat.setTongTien((double) dsMatHang.getTongTienList());
                 hoaDonXuat.setTongTienGoc(hoaDonXuatDAO.LayTongTienGocCuaHD(arayListView));
+                hoaDonXuat.setMaKH(_khachHang.getMaKH());
                 hoaDonXuatDAO.UpdateTTHoaDonXuat(hoaDonXuat);
                 // Thêm Dữ Liệu Mới Xuống Database
                 hoaDonXuatDAO.InsertDuLieuMuaDB(arayListView, hoaDonXuat, _khachHang);

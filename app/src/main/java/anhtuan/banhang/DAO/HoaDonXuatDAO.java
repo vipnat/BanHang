@@ -93,7 +93,7 @@ public class HoaDonXuatDAO {
     public void ThemHoaDonXuat(HoaDonXuat hdx) {
         SimpleDateFormat frmDate = new SimpleDateFormat("MM/dd/yyyy");
         String ngayBan = frmDate.format(new Date()); // Ngày Hiện Tại
-        String insertHDX = "insert into tblHoaDonXuat(MaHD,MaNhanVien,NgayXuat,GhiChu) values(N'" + hdx.getMaHD() + "',N'" + hdx.getMaNhanVien() + "',N'" + ngayBan + "',N'" + hdx.getGhiChu() + "')";
+        String insertHDX = "insert into tblHoaDonXuat(MaHD,MaNhanVien,NgayXuat,MaKH) values(N'" + hdx.getMaHD() + "',N'" + hdx.getMaNhanVien() + "',N'" + ngayBan + "',N'" + hdx.getMaKH() + "')";
         try {
             statement = _con.prepareStatement(insertHDX);
             statement.executeUpdate();
@@ -103,7 +103,7 @@ public class HoaDonXuatDAO {
     }
 
     public void UpdateTTHoaDonXuat(HoaDonXuat hdx) {
-        String updateSQL = "UPDATE tblHoaDonXuat SET TongTienGoc ='" + hdx.getTongTienGoc() + "' , TongTien = '" + hdx.getTongTien() + "' WHERE MaHD='" + hdx.getMaHD() + "'";
+        String updateSQL = "UPDATE tblHoaDonXuat SET TongTienGoc ='" + hdx.getTongTienGoc() + "' , TongTien = '" + hdx.getTongTien() + "' , MaKH = '" + hdx.getMaKH() + "' WHERE MaHD='" + hdx.getMaHD() + "'";
         try {
             statement = _con.prepareStatement(updateSQL);
             statement.executeUpdate();
