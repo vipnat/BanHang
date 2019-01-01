@@ -163,7 +163,6 @@ public class HoaDonXuatDAO {
             query_SQL = "DELETE tblChiTietHDX WHERE MaHD='" + strMaHoaDon + "'";
             statement = _con.prepareStatement(query_SQL);
             statement.executeUpdate();
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
