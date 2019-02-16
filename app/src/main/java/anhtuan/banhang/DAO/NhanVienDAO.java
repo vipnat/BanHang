@@ -21,6 +21,7 @@ public class NhanVienDAO {
 
     public ArrayList<NhanVien> getArrNhanVien() {
         try {
+            //String sqlSelect = "SELECT * FROM tblNhanVien ORDER BY MaNhanVien DESC";
             String sqlSelect = "SELECT * FROM tblNhanVien";
             PreparedStatement statement = _con.prepareStatement(sqlSelect);
             _rs = statement.executeQuery();

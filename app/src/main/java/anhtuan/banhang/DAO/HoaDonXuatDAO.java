@@ -27,6 +27,17 @@ public class HoaDonXuatDAO {
     ResultSet _rs;
     PreparedStatement statement;
 
+    public void CloseCONN() {
+        try {
+            _con.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void OpenCONN() {
+        _con = connectionDB.CONN();
+    }
 
     public String LayMaHoaDonTheoNgay(String DayMonthYear) {
         String MaHD = "";
@@ -125,23 +136,32 @@ public class HoaDonXuatDAO {
                 query_SQL = "update tblMatHang set SoLuong=SoLuong-" + mh.getSoLuong() + " where MaMatH=N'" + mh.getMaMatH() + "'";
                 statement = _con.prepareStatement(query_SQL);
                 statement.executeUpdate();
-
-                // Kiểm Tra Tồn Tại Giá Bán Của Khách Hàng
-                if (!KiemTraTonTaiGiaBan(kh.getMaKH(), mh.getMaMatH())) {
-                    query_SQL = "INSERT INTO tblGiaBan([MaMatH],[MaKH],[GiaBan]) VALUES (N'" + mh.getMaMatH() + "',N'" + kh.getMaKH() + "'," + mh.getDonGia() + ")";
-                    statement = _con.prepareStatement(query_SQL);
-                    statement.executeUpdate();
-                } else {
-                    //Cập nhập giá mới cho khách hàng
-                    query_SQL = "update [tblGiaBan] set [GiaBan]=" + mh.getDonGia() + " where [MaKH]=N'" + kh.getMaKH() + "' and [MaMatH] =N'" + mh.getMaMatH() + "'";
-                    statement = _con.prepareStatement(query_SQL);
-                    statement.executeUpdate();
-                }
             }
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public void UpdateGiaBanTheoKhachHang(KhachHang kh, MatHang mh) {
+        String query_SQL = "";
+        // Kiểm Tra Tồn Tại Giá Bán Của Khách Hàng
+        try {
+            _con = connectionDB.CONN();
+            if (!KiemTraTonTaiGiaBan(kh.getMaKH(), mh.getMaMatH())) {
+                query_SQL = "INSERT INTO tblGiaBan([MaMatH],[MaKH],[GiaBan]) VALUES (N'" + mh.getMaMatH() + "',N'" + kh.getMaKH() + "'," + mh.getDonGia() + ")";
+                statement = _con.prepareStatement(query_SQL);
+                statement.executeUpdate();
+            } else {
+                //Cập nhập giá mới cho khách hàng
+                query_SQL = "update [tblGiaBan] set [GiaBan]=" + mh.getDonGia() + " where [MaKH]=N'" + kh.getMaKH() + "' and [MaMatH] =N'" + mh.getMaMatH() + "'";
+                statement = _con.prepareStatement(query_SQL);
+                statement.executeUpdate();
+            }
+            _con.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -185,7 +205,7 @@ public class HoaDonXuatDAO {
 
     public boolean KiemTraTonTaiGiaBan(String strMaKH, String strMaMH) {
         try {
-            String sqlSelect = "SELECT COUNT(*) FROM tblGiaBan WHERE MaMatH ='" + strMaMH + "' AND MaKH = '" + strMaKH + "'";
+            String sqlSelect = "SELECT MaMatH FROM tblGiaBan WHERE MaMatH ='" + strMaMH + "' AND MaKH = '" + strMaKH + "'";
             statement = _con.prepareStatement(sqlSelect);
             _rs = statement.executeQuery();
             if (!_rs.isBeforeFirst()) {
@@ -238,6 +258,21 @@ public class HoaDonXuatDAO {
         }
     }
 
+    public String LayMaHoaDonMoiNhat() {
+        String query_SQL = "SELECT TOP 1 MaHD FROM tblHoaDonXuat ORDER BY NgayXuat DESC,MaHD DESC";
+        String strMaHD = "";
+        try {
+            statement = _con.prepareStatement(query_SQL);
+            _rs = statement.executeQuery();
+            while (_rs.next()) {
+                strMaHD = _rs.getString("MaHD");
+            }
+        } catch (SQLException _ex) {
+            _ex.printStackTrace();
+        }
+        return strMaHD;
+    }
+
     protected void Upload(File filePath) {
         /*
         try {
@@ -269,5 +304,6 @@ public class HoaDonXuatDAO {
         }
         */
     }
+
 
 }

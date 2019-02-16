@@ -20,6 +20,7 @@ public class MatHangDAO {
     public ArrayList<MatHang> getArrMatHang(String _maLoai) {
 
         try {
+            _con = connectionDB.CONN();
             String sqlSelect = "SELECT * FROM tblMatHang WHERE SUBSTRING(MaMatH,1,3) = '" + _maLoai + "'";
             if (_maLoai == "DAU")
                 sqlSelect = "SELECT * FROM tblMatHang WHERE SUBSTRING(MaMatH,1,3) = 'DAI' OR SUBSTRING(MaMatH,1,3) = 'DAU'";
@@ -35,6 +36,7 @@ public class MatHangDAO {
 
                 arrMatHang.add(_matHang);
             }
+            _con.close();
         } catch (Exception ex) {
             _ex = "Exceptions";
         }

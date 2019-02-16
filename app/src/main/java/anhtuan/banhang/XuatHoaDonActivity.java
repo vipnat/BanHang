@@ -166,6 +166,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         hoaDonXuatDAO.ThemHoaDonXuat(hoaDonXuat);
 
         addEventForm();
+        hoaDonXuatDAO.CloseCONN();
     }
 
     private void getDataFromLogin() {
@@ -308,6 +309,10 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 _matHang = arrayMH.get(intSelectSpinMHPosition);
                 String textSL = _txtsoLuong.getText().toString();
                 String textGia = _txtdonGia.getText().toString();
+                if (textSL.length() == 0) {
+                    Toast.makeText(XuatHoaDonActivity.this, "Số Lượng Phải > 0 ", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 Integer intSoLuongMua = Integer.parseInt(textSL);
                 if (textSL.length() == 0 || textGia.length() == 0 || textGia.equals(".") || intSoLuongMua == 0) {
                     Toast.makeText(XuatHoaDonActivity.this, "Số Lượng, Đơn Giá Phải > 0 ", Toast.LENGTH_LONG).show();
@@ -329,6 +334,8 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 addMatHangForListView();
                 setThongTinKetQua();
                 if (arayListView.size() > 0) _spinKH.setEnabled(false);
+                // Upadate Giá Bán
+                hoaDonXuatDAO.UpdateGiaBanTheoKhachHang(_khachHang,_matHang);
 
                 TaoFilePDFA5Null();
                 Toast.makeText(XuatHoaDonActivity.this, "Đã Mua " + (int) (double) _matHang.getSoLuong() + " dây\n" + _matHang, Toast.LENGTH_LONG).show();
@@ -352,7 +359,8 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 } catch (DocumentException e) {
                     e.printStackTrace();
                 }
-
+                // Mở Kết Nối
+                hoaDonXuatDAO.OpenCONN();
                 // Cập Nhập Lại Tổng Tiền
                 hoaDonXuat.setTongTien((double) dsMatHang.getTongTienList());
                 hoaDonXuat.setTongTienGoc(hoaDonXuatDAO.LayTongTienGocCuaHD(arayListView));
@@ -379,7 +387,8 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 // Khóa Trả Tiền Và Xuất Hóa Đơn Khi Tạo Thành Công.
                 _txtTraTien.setEnabled(false);
                 btnXuatHD.setEnabled(false);
-
+                // Đóng Kết Nối
+                hoaDonXuatDAO.CloseCONN();
             }
         });
 
@@ -396,7 +405,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 try {
                     createA4PdfPrint(filePathHoaDon);
 
-                    // Đóng App Khi In Hóa Đơn Sau 10s
+                    // Đóng App Khi In Hóa Đơn Sau 3s
                     handler.postAtTime(runnable, System.currentTimeMillis() + interval);
                     handler.postDelayed(runnable, interval);
 
@@ -446,7 +455,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
     }
 
     // Đong Form Sau 10s
-    private final int interval = 10000; // 10 Second
+    private final int interval = 3000; // 3 Second
     private Handler handler = new Handler();
     private Runnable runnable = new Runnable() {
         public void run() {
@@ -583,8 +592,8 @@ public class XuatHoaDonActivity extends AppCompatActivity {
 
         String strFONT = "/res/font/times.ttf";
         BaseFont timesFont = BaseFont.createFont(strFONT, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-        Font font16 = new Font(timesFont, 9);
-        Font font22 = new Font(timesFont, 14);
+        Font font09 = new Font(timesFont, 9);
+        Font font14 = new Font(timesFont, 14);
 
 
         // Creating iText Table from title data
@@ -594,17 +603,17 @@ public class XuatHoaDonActivity extends AppCompatActivity {
 
         // Create Cell Title
         PdfPCell cellTitle;
-        cellTitle = new PdfPCell(new Phrase("HÓA ĐƠN BÁN HÀNG \n", font22));
+        cellTitle = new PdfPCell(new Phrase("HÓA ĐƠN BÁN HÀNG \n", font14));
         cellTitle.setColspan(3);
         cellTitle.setHorizontalAlignment(1);
         cellTitle.setBorder(0);
         pdfTableTitle.addCell(cellTitle);
 
-        cellTitle = new PdfPCell(new Paragraph("Người Bán  : " + nhanVien.toString() + "\nKhách Hàng : " + _khachHang.getTenKH() + "\n", font16));
+        cellTitle = new PdfPCell(new Paragraph("Người Bán  : " + nhanVien.toString() + "\nKhách Hàng : " + _khachHang.getTenKH() + "\n", font09));
         cellTitle.setBorder(0);
         pdfTableTitle.addCell(cellTitle);
         //
-        cellTitle = new PdfPCell(new Paragraph("Ngày :  " + ngayBan + "\nMã HĐ : " + strMaHoaDon + "\n", font16));
+        cellTitle = new PdfPCell(new Paragraph("Ngày :  " + ngayBan + "\nMã HĐ : " + strMaHoaDon + "\n", font09));
         cellTitle.setBorder(0);
         cellTitle.setHorizontalAlignment(2);
         pdfTableTitle.addCell(cellTitle);
@@ -627,31 +636,31 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         //
         BaseColor baseHeader = new BaseColor(240, 240, 240);
 
-        PdfPCell cellHeader1 = new PdfPCell(new Phrase("Mã MH", font16));
+        PdfPCell cellHeader1 = new PdfPCell(new Phrase("Mã MH", font09));
         cellHeader1.setBackgroundColor(baseHeader);
         cellHeader1.setHorizontalAlignment(1);
         cellHeader1.setFixedHeight(14f);
         pdfTable.addCell(cellHeader1);
 
-        PdfPCell cellHeader2 = new PdfPCell(new Phrase("Tên Mặt Hàng", font16));
+        PdfPCell cellHeader2 = new PdfPCell(new Phrase("Tên Mặt Hàng", font09));
         cellHeader2.setBackgroundColor(baseHeader);
         cellHeader2.setHorizontalAlignment(1);
         cellHeader2.setFixedHeight(14f);
         pdfTable.addCell(cellHeader2);
 
-        PdfPCell cellHeader3 = new PdfPCell(new Phrase("Số Lượng", font16));
+        PdfPCell cellHeader3 = new PdfPCell(new Phrase("Số Lượng", font09));
         cellHeader3.setBackgroundColor(baseHeader);
         cellHeader3.setHorizontalAlignment(1);
         cellHeader3.setFixedHeight(14f);
         pdfTable.addCell(cellHeader3);
 
-        PdfPCell cellHeader4 = new PdfPCell(new Phrase("Đơn Giá", font16));
+        PdfPCell cellHeader4 = new PdfPCell(new Phrase("Đơn Giá", font09));
         cellHeader4.setBackgroundColor(baseHeader);
         cellHeader4.setHorizontalAlignment(1);
         cellHeader4.setFixedHeight(14f);
         pdfTable.addCell(cellHeader4);
 
-        PdfPCell cellHeader5 = new PdfPCell(new Phrase("Thành Tiền", font16));
+        PdfPCell cellHeader5 = new PdfPCell(new Phrase("Thành Tiền", font09));
         cellHeader5.setBackgroundColor(baseHeader);
         cellHeader5.setHorizontalAlignment(1);
         cellHeader5.setFixedHeight(14f);
@@ -666,35 +675,36 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                         String kieuStr = mh.getMaMatH().substring(0, 3);
                         if (kieuStr.trim().equals("DAY")) kieuStr = "D";
                         else if (kieuStr.trim().equals("DAI")) kieuStr = "Đ";
+                        else if (kieuStr.trim().equals("DAU")) kieuStr = "Đ";
                         else kieuStr = "";
-                        _cellPDF = new PdfPCell(new Phrase(kieuStr + mh.getMaMatH().substring(3), font16));
-                        _cellPDF.setFixedHeight(14f);
+                        _cellPDF = new PdfPCell(new Phrase(kieuStr + mh.getMaMatH().substring(3), font14));
+                        _cellPDF.setFixedHeight(18f);
                         _cellPDF.setHorizontalAlignment(Element.ALIGN_CENTER);
                         pdfTable.addCell(_cellPDF);
                         break;
                     case 2:  // Lấy Tên Sản Phẩm
-                        _cellPDF = new PdfPCell(new Phrase(mh.getTenMatH(), font16));
-                        _cellPDF.setFixedHeight(14f);
+                        _cellPDF = new PdfPCell(new Phrase(mh.getTenMatH(), font14));
+                        _cellPDF.setFixedHeight(18f);
                         _cellPDF.setHorizontalAlignment(Element.ALIGN_CENTER);
                         pdfTable.addCell(_cellPDF);
                         break;
                     case 3: // Lấy Số Lượng
-                        _cellPDF = new PdfPCell(new Phrase((new DecimalFormat("##")).format(mh.getSoLuong()), font16));
-                        _cellPDF.setFixedHeight(14f);
+                        _cellPDF = new PdfPCell(new Phrase((new DecimalFormat("##")).format(mh.getSoLuong()), font14));
+                        _cellPDF.setFixedHeight(18f);
                         _cellPDF.setHorizontalAlignment(Element.ALIGN_CENTER);
                         pdfTable.addCell(_cellPDF);
                         break;
                     case 4:  // Lấy Đơn Giá
                         float dbDonGia = new Float(mh.getDonGia());
-                        _cellPDF = new PdfPCell(new Phrase(dbDonGia - (int) dbDonGia > 0 ? dbDonGia + "" : (int) dbDonGia + "", font16));
-                        _cellPDF.setFixedHeight(14f);
+                        _cellPDF = new PdfPCell(new Phrase(dbDonGia - (int) dbDonGia > 0 ? dbDonGia + "" : (int) dbDonGia + "", font14));
+                        _cellPDF.setFixedHeight(18f);
                         _cellPDF.setHorizontalAlignment(Element.ALIGN_CENTER);
                         pdfTable.addCell(_cellPDF);
                         break;
                     case 5: // Thành Tiền
                         double thanhTien = mh.getSoLuong() * mh.getDonGia();
-                        _cellPDF = new PdfPCell(new Phrase(thanhTien - (int) thanhTien > 0 ? thanhTien + "" : (int) thanhTien + "", font16));
-                        _cellPDF.setFixedHeight(14f);
+                        _cellPDF = new PdfPCell(new Phrase(thanhTien - (int) thanhTien > 0 ? thanhTien + "" : (int) thanhTien + "", font14));
+                        _cellPDF.setFixedHeight(18f);
                         _cellPDF.setHorizontalAlignment(Element.ALIGN_CENTER);
                         pdfTable.addCell(_cellPDF);
                         break;
@@ -702,11 +712,14 @@ public class XuatHoaDonActivity extends AppCompatActivity {
             }
         }
         // Adding Row Tổng Tiền
+        pdfTable.addCell(new Phrase(lblSoLoai.getText().toString(), font14));
         pdfTable.addCell(new Phrase(""));
-        pdfTable.addCell(new Phrase(""));
-        pdfTable.addCell(new Phrase(""));
-        pdfTable.addCell(new Phrase(""));
-        pdfTable.addCell(new Phrase("Tổng: " + strTongTienBan, font16));
+        pdfTable.addCell(new Phrase(lblSoLuong.getText().toString(), font14));
+        PdfPCell _cellTong = new PdfPCell(new Phrase("Tổng: ", font14));
+        _cellTong.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        _cellTong.setBorder(0);
+        pdfTable.addCell(_cellTong);
+        pdfTable.addCell(new Phrase(strTongTienBan, font14));
 
         //
         // Table Tính Tiền
@@ -718,22 +731,23 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         pdfTableTongTien.getDefaultCell().setBorder(0);
 
         // Add Cell Tính Tiền
-        pdfTableTongTien.addCell(new Phrase(lblSoLoai.getText().toString(), font16));
         pdfTableTongTien.addCell(new Phrase(""));
-        pdfTableTongTien.addCell(new Phrase(lblSoLuong.getText().toString(), font16));
+        pdfTableTongTien.addCell(new Phrase(""));
 
         if (dbNoCu > 0) {
-            PdfPCell _cellPDFTT = new PdfPCell(new Phrase("Tổng Toa : \nNợ Cũ      : \nTổng Tiền: \nTrả Tiền   : \n------------- \nCòn          :", font16));
+            PdfPCell _cellPDFTT = new PdfPCell(new Phrase("Nợ Cũ      : \nTổng Tiền: \nTrả Tiền   : \n------------- \nCòn          :", font14));
             _cellPDFTT.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            _cellPDFTT.setColspan(2);
             _cellPDFTT.setBorder(0);
             pdfTableTongTien.addCell(_cellPDFTT);
-            pdfTableTongTien.addCell(new Phrase("" + strTongTienBan + "\n" + strNoCu + "\n" + strTongNo + "\n" + strTraTien + "\n\n" + strTienConLai, font16));
+            pdfTableTongTien.addCell(new Phrase("" + strNoCu + "\n" + strTongNo + "\n" + strTraTien + "\n\n" + strTienConLai, font14));
         } else {
-            PdfPCell _cellPDFTT = new PdfPCell(new Phrase("Tổng Toa : \nTrả           : \n------------- \nCòn          :", font16));
+            PdfPCell _cellPDFTT = new PdfPCell(new Phrase("Trả           : \n------------- \nCòn          :", font14));
             _cellPDFTT.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            _cellPDFTT.setColspan(2);
             _cellPDFTT.setBorder(0);
             pdfTableTongTien.addCell(_cellPDFTT);
-            pdfTableTongTien.addCell(new Phrase("" + strTongTienBan + "\n" + strTraTien + "\n\n" + strTienConLai, font16));
+            pdfTableTongTien.addCell(new Phrase("" + strTraTien + "\n\n" + strTienConLai, font14));
         }
 
         //
