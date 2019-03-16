@@ -65,6 +65,7 @@ public class MatHangDAO {
     public String layGiaBanTheoMHvaKH(String maMatHang, String _strMaKhachHang) {
         String strGiaban = "";
         try {
+            _con = connectionDB.CONN();
             String selectGiaTheoKH = "SELECT [tblGiaBan].[GiaBan] FROM [tblGiaBan] INNER JOIN [tblMatHang] ON [tblMatHang].MaMatH = [tblGiaBan].MaMatH WHERE [MaKH]='" + _strMaKhachHang + "' AND [tblMatHang].MaMatH = '" + maMatHang + "'";
             PreparedStatement statement = _con.prepareStatement(selectGiaTheoKH);
             _rs = statement.executeQuery();
@@ -72,7 +73,7 @@ public class MatHangDAO {
             while (_rs.next()) {
                 strGiaban = _rs.getString("GiaBan");
             }
-
+            _con.close();
         } catch (Exception ex) {
             _ex = "Exceptions";
         }

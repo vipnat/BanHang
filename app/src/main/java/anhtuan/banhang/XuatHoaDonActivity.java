@@ -609,7 +609,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         cellTitle.setBorder(0);
         pdfTableTitle.addCell(cellTitle);
 
-        cellTitle = new PdfPCell(new Paragraph("Người Bán  : " + nhanVien.toString() + "\nKhách Hàng : " + _khachHang.getTenKH() + "\n", font09));
+        cellTitle = new PdfPCell(new Paragraph("Người Bán  : " + nhanVien.toString() + "\nKhách Hàng : " + _khachHang.getTenKH() +" ("+ hoaDonXuatDAO.LayTongSoHoaDonTheoKH(_khachHang.getMaKH()) + ")\n", font09));
         cellTitle.setBorder(0);
         pdfTableTitle.addCell(cellTitle);
         //

@@ -273,6 +273,24 @@ public class HoaDonXuatDAO {
         return strMaHD;
     }
 
+    public int LayTongSoHoaDonTheoKH(String maKH) {
+        String query_SQL = "SELECT COUNT(MaKH) FROM tblHoaDonXuat WHERE MaKH='"+ maKH +"' AND NgayXuat > '2019-02-05'";
+        int intTong = 0;
+        try {
+            _con = connectionDB.CONN();
+            XoaAllHoaDonXuatNull();
+            statement = _con.prepareStatement(query_SQL);
+            _rs = statement.executeQuery();
+            while (_rs.next()) {
+                intTong = _rs.getInt(0);
+            }
+            _con.close();
+        } catch (SQLException _ex) {
+            _ex.printStackTrace();
+        }
+        return intTong + 1;
+    }
+
     protected void Upload(File filePath) {
         /*
         try {
