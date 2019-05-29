@@ -278,11 +278,11 @@ public class HoaDonXuatDAO {
         int intTong = 0;
         try {
             _con = connectionDB.CONN();
-            XoaAllHoaDonXuatNull();
+            //XoaAllHoaDonXuatNull();
             statement = _con.prepareStatement(query_SQL);
             _rs = statement.executeQuery();
             while (_rs.next()) {
-                intTong = _rs.getInt(0);
+                intTong = _rs.getInt(1);
             }
             _con.close();
         } catch (SQLException _ex) {
