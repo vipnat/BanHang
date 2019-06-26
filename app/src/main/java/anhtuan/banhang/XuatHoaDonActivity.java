@@ -129,6 +129,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
     DanhSachMatHang dsMatHang = new DanhSachMatHang();
     int intSelectSpinMHPosition = 0;
     int intTienMuaHang = 0;
+    String tongTienBan = "0";
 
     String pathPDF = Environment.getExternalStorageDirectory().getAbsolutePath() + "/LuuHoaDon";
     String path_a5_clear = pathPDF + "/a5_clear.pdf";
@@ -335,7 +336,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 setThongTinKetQua();
                 if (arayListView.size() > 0) _spinKH.setEnabled(false);
                 // Upadate Giá Bán
-                hoaDonXuatDAO.UpdateGiaBanTheoKhachHang(_khachHang,_matHang);
+                hoaDonXuatDAO.UpdateGiaBanTheoKhachHang(_khachHang, _matHang);
 
                 TaoFilePDFA5Null();
                 Toast.makeText(XuatHoaDonActivity.this, "Đã Mua " + (int) (double) _matHang.getSoLuong() + " dây\n" + _matHang, Toast.LENGTH_LONG).show();
@@ -452,6 +453,23 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 }
             }
         });
+
+        //
+        //  Tổng Tiên Onclick
+        //
+        lblTongTien.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (Double.parseDouble(_khachHang.getNoCu()) > 0) {
+                    if (tongTienBan.equals(new DecimalFormat("###,###").format(dsMatHang.getTongTienList()).replaceAll(",", "."))) {
+                        tongTienBan = new DecimalFormat("###,###").format(Double.parseDouble(tongTienBan) + Double.parseDouble(_khachHang.getNoCu()));
+                    } else {
+                        tongTienBan = new DecimalFormat("###,###").format(dsMatHang.getTongTienList()).replaceAll(",", ".");
+                    }
+                    lblTongTien.setText("+$:" + tongTienBan);
+                }
+            }
+        });
     }
 
     // Đong Form Sau 10s
@@ -506,7 +524,10 @@ public class XuatHoaDonActivity extends AppCompatActivity {
     private void setThongTinKetQua() {
         lblSoLoai.setText(arayListView.size() + " Loại");
         lblSoLuong.setText("SL:" + dsMatHang.getSoLuongMatHang());
-        lblTongTien.setText("+$:" + new DecimalFormat("###,###").format(dsMatHang.getTongTienList()).replaceAll(",", "."));
+        tongTienBan = new DecimalFormat("###,###").format(dsMatHang.getTongTienList()).replaceAll(",", ".");
+        lblTongTien.setText("+$:" + tongTienBan);
+
+        //lblTongTien.setText("+$:" + new DecimalFormat("###,###").format(dsMatHang.getTongTienList()).replaceAll(",", "."));
     }
 
     /**
@@ -609,7 +630,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         cellTitle.setBorder(0);
         pdfTableTitle.addCell(cellTitle);
 
-        cellTitle = new PdfPCell(new Paragraph("Người Bán  : " + nhanVien.toString() + "\nKhách Hàng : " + _khachHang.getTenKH() +" ("+ hoaDonXuatDAO.LayTongSoHoaDonTheoKH(_khachHang.getMaKH()) + ")\n", font09));
+        cellTitle = new PdfPCell(new Paragraph("Người Bán  : " + nhanVien.toString() + "\nKhách Hàng : " + _khachHang.getTenKH() + " (" + hoaDonXuatDAO.LayTongSoHoaDonTheoKH(_khachHang.getMaKH()) + ")\n", font09));
         cellTitle.setBorder(0);
         pdfTableTitle.addCell(cellTitle);
         //
