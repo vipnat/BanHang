@@ -167,6 +167,7 @@ public class HoaDonXuatDAO {
 
     public void DeleteDuLieuMuaDB(String strMaHoaDon) {
         try {
+            _con = connectionDB.CONN();
             if (!KiemTraTonTaiTrongChiTietHoaDon(strMaHoaDon))
                 return;
             String query_SQL = "SELECT * FROM tblChiTietHDX WHERE MaHD ='" + strMaHoaDon + "'";
@@ -183,6 +184,7 @@ public class HoaDonXuatDAO {
             query_SQL = "DELETE tblChiTietHDX WHERE MaHD='" + strMaHoaDon + "'";
             statement = _con.prepareStatement(query_SQL);
             statement.executeUpdate();
+            _con.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }

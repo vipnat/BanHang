@@ -61,9 +61,11 @@ public class KhachHangDAO {
 
     public void CapNhapNoCuTheoKhachHang(KhachHang khachHang) {
         try {
+            _con = connectionDB.CONN();
             String sqlUpdate = "UPDATE tblKhachHang SET NoCu='" + khachHang.getNoCu() + "' WHERE MaKH='" + khachHang.getMaKH() + "'";
             PreparedStatement statement = _con.prepareStatement(sqlUpdate);
             statement.executeUpdate();
+            _con.close();
         } catch (SQLException _ex) {
             _ex.printStackTrace();
         }

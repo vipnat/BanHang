@@ -45,6 +45,7 @@ public class MatHangDAO {
 
     public MatHang getMatHangByID(String mhMH) {
         try {
+            _con = connectionDB.CONN();
             String sqlSelect = "SELECT * FROM tblMatHang WHERE MaMatH = '" + mhMH + "'";
             PreparedStatement statement = _con.prepareStatement(sqlSelect);
             _rs = statement.executeQuery();
@@ -56,6 +57,7 @@ public class MatHangDAO {
                 _matHang.setSoLuong(Float.parseFloat(_rs.getString("SoLuong")));
                 _matHang.setDonGia(Float.parseFloat(_rs.getString("DonGia")));
             }
+            _con.close();
         } catch (Exception ex) {
             _ex = "Exceptions";
         }

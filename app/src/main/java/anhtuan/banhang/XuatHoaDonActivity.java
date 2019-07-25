@@ -104,6 +104,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
     ListView _listV;
 
     String _strMaLoai = "MSP";
+    String NoCuKhachHang = "0";
     // Cặp Đối Tượng Cho Spiner Mặt Hàng
     ArrayList<MatHang> arrayMH = new ArrayList<MatHang>();
     ArrayAdapter<MatHang> adapterMH = null;
@@ -353,6 +354,22 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                     Toast.makeText(XuatHoaDonActivity.this, "Chưa Có Sản Phẩm !", Toast.LENGTH_LONG).show();
                     return;
                 }
+                if(!_txtTraTien.isEnabled()) {
+                    // Mở Trả Tiền Khi Sửa Hóa Đơn.
+                    _txtTraTien.setEnabled(true);
+                    btnThem.setEnabled(true);
+                    _listV.setEnabled(true);
+                    lblTongTien.setEnabled(true);
+                    // Chuyển Tha`nh Nút Edit
+                    btnXuatHD.setImageResource(R.drawable.image_save_pdf);
+                    // Xóa Dữ Liệu
+                    hoaDonXuatDAO.DeleteDuLieuMuaDB(strMaHoaDon);
+                    // Cập Nhật Lại Nợ Cũ
+                    _khachHang.setNoCu(NoCuKhachHang);
+                    _khachHangDAO.CapNhapNoCuTheoKhachHang(_khachHang);
+                    lblNoCu.setText(NoCuKhachHang);
+                    return;
+                }
                 try {
                     XuatHoaDonPDF();
                 } catch (IOException e) {
@@ -376,6 +393,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 if (!_txtTraTien.getText().toString().equals(""))
                     intTienTra = Integer.parseInt(_txtTraTien.getText().toString());
                 if (intTienTra - intTienMuaHang != 0) {
+                    NoCuKhachHang = _khachHang.getNoCu(); // Lưu Lại Nợ Cũ
                     double updateNo = Double.parseDouble(_khachHang.getNoCu()) + intTienMuaHang - intTienTra;
                     _khachHang.setNoCu(updateNo - (int) updateNo > 0 ? updateNo + "" : (int) updateNo + "");
                     _khachHangDAO.CapNhapNoCuTheoKhachHang(_khachHang);
@@ -387,7 +405,12 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 }
                 // Khóa Trả Tiền Và Xuất Hóa Đơn Khi Tạo Thành Công.
                 _txtTraTien.setEnabled(false);
-                btnXuatHD.setEnabled(false);
+                //btnXuatHD.setEnabled(false);
+                btnThem.setEnabled(false);
+                _listV.setEnabled(false);
+                lblTongTien.setEnabled(false);
+                // Chuyển Tha`nh Nút Edit
+                btnXuatHD.setImageResource(R.drawable.image_edit);
                 // Đóng Kết Nối
                 hoaDonXuatDAO.CloseCONN();
             }
@@ -470,6 +493,20 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 }
             }
         });
+
+        //
+        // Tên Hóa Đơn Onclick Đổi Sang In Theo STT
+        //
+        lblMaHoaDon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(lblMaHoaDon.getText().equals("In_STT"))
+                    lblMaHoaDon.setText(nhanVien.getTenNhanVien() + " - HĐ: " + strMaHoaDon);
+                else
+                    lblMaHoaDon.setText("In_STT");
+            }
+        });
+
     }
 
     // Đong Form Sau 10s
@@ -688,17 +725,25 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         pdfTable.addCell(cellHeader5);
 
         //Adding ListView Row
+        int soTT = 0;
         for (MatHang mh : arayListView) {
             for (int i = 1; i <= 5; i++) {
                 PdfPCell _cellPDF;
                 switch (i) {
                     case 1: // Lấy Mã Sản Phẩm
-                        String kieuStr = mh.getMaMatH().substring(0, 3);
-                        if (kieuStr.trim().equals("DAY")) kieuStr = "D";
-                        else if (kieuStr.trim().equals("DAI")) kieuStr = "Đ";
-                        else if (kieuStr.trim().equals("DAU")) kieuStr = "Đ";
-                        else kieuStr = "";
-                        _cellPDF = new PdfPCell(new Phrase(kieuStr + mh.getMaMatH().substring(3), font14));
+                        soTT = soTT + 1;
+                        if(lblMaHoaDon.getText().equals("In_STT"))
+                        {
+                            _cellPDF = new PdfPCell(new Phrase(soTT +"", font14));
+                        }
+                        else {
+                            String kieuStr = mh.getMaMatH().substring(0, 3);
+                            if (kieuStr.trim().equals("DAY")) kieuStr = "D";
+                            else if (kieuStr.trim().equals("DAI")) kieuStr = "Đ";
+                            else if (kieuStr.trim().equals("DAU")) kieuStr = "Đ";
+                            else kieuStr = "";
+                            _cellPDF = new PdfPCell(new Phrase(kieuStr + mh.getMaMatH().substring(3), font14));
+                        }
                         _cellPDF.setFixedHeight(18f);
                         _cellPDF.setHorizontalAlignment(Element.ALIGN_CENTER);
                         pdfTable.addCell(_cellPDF);
