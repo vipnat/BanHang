@@ -104,7 +104,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
     ListView _listV;
 
     String _strMaLoai = "MSP";
-    String NoCuKhachHang = "0";
+    String _NoCuKhachHang = "0";
     // Cặp Đối Tượng Cho Spiner Mặt Hàng
     ArrayList<MatHang> arrayMH = new ArrayList<MatHang>();
     ArrayAdapter<MatHang> adapterMH = null;
@@ -132,8 +132,8 @@ public class XuatHoaDonActivity extends AppCompatActivity {
     int intTienMuaHang = 0;
     String tongTienBan = "0";
 
-    String pathPDF = Environment.getExternalStorageDirectory().getAbsolutePath() + "/LuuHoaDon";
-    String path_a5_clear = pathPDF + "/a5_clear.pdf";
+    static String pathPDF = Environment.getExternalStorageDirectory().getAbsolutePath() + "/LuuHoaDon";
+    static String path_a5_clear = pathPDF + "/a5_clear.pdf";
     String path_a4_print = pathPDF + "/a4_print.pdf";
     String strMaHoaDon = "";
     File pdfHoaDon;
@@ -345,7 +345,8 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         });
 
         //
-        //Button Print On Click
+        // Button View Print On Click
+        // Xem Trước Hóa Đơn
         //
         btnXuatHD.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -365,9 +366,13 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                     // Xóa Dữ Liệu
                     hoaDonXuatDAO.DeleteDuLieuMuaDB(strMaHoaDon);
                     // Cập Nhật Lại Nợ Cũ
-                    _khachHang.setNoCu(NoCuKhachHang);
+                    _khachHang.setNoCu(_NoCuKhachHang);
                     _khachHangDAO.CapNhapNoCuTheoKhachHang(_khachHang);
-                    lblNoCu.setText(NoCuKhachHang);
+                    Float fNoCu = Float.parseFloat(_khachHang.getNoCu());
+                    if (fNoCu > 0)
+                        lblNoCu.setText("Nợ: " + _khachHang.getNoCu());
+                    else
+                        lblNoCu.setText("");
                     return;
                 }
                 try {
@@ -390,11 +395,11 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 // Update Lại Nợ Cũ
                 intTienMuaHang = dsMatHang.getTongTienList();
                 int intTienTra = 0;
+                _NoCuKhachHang = _khachHang.getNoCu(); // Lưu Lại Nợ Cũ
                 if (!_txtTraTien.getText().toString().equals(""))
                     intTienTra = Integer.parseInt(_txtTraTien.getText().toString());
                 if (intTienTra - intTienMuaHang != 0) {
-                    NoCuKhachHang = _khachHang.getNoCu(); // Lưu Lại Nợ Cũ
-                    double updateNo = Double.parseDouble(_khachHang.getNoCu()) + intTienMuaHang - intTienTra;
+                    double updateNo = Double.parseDouble(_NoCuKhachHang) + intTienMuaHang - intTienTra;
                     _khachHang.setNoCu(updateNo - (int) updateNo > 0 ? updateNo + "" : (int) updateNo + "");
                     _khachHangDAO.CapNhapNoCuTheoKhachHang(_khachHang);
                     if (updateNo > 0) {
@@ -417,7 +422,8 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         });
 
         //
-        // Button View PDF Click
+        // Button Print PDF Click
+        // Xoay Ngang Để In
         //
         btnPrint.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -426,6 +432,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 //openPdf();
                 File fileHoaDon = new File(filePathHoaDon);
                 if (!fileHoaDon.exists()) return;
+                hoaDonXuatDAO.UploadFilePDFToDatabase(filePathHoaDon);
                 try {
                     createA4PdfPrint(filePathHoaDon);
 
@@ -537,13 +544,6 @@ public class XuatHoaDonActivity extends AppCompatActivity {
             }
         });
         b.create().show();
-        /*
-        Toast.makeText(this, "Hoàn Thành Xuất Hàng !", Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_HOME);
-        startActivity(intent);
-        finish();
-        */
     }
 
     private void LayGiaBanLenEditText() {
@@ -955,7 +955,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
     //
     // Tạo File PDF A5 Trắng Để Chèn Vào A4
     //
-    public void TaoFilePDFA5Null() {
+    public static void TaoFilePDFA5Null() {
         // Get File
         File a5_null = new File(path_a5_clear);
         if (a5_null.exists()) a5_null.delete();

@@ -1,8 +1,13 @@
 package anhtuan.banhang.DAO;
 
+import android.os.Environment;
+
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import java.sql.Connection;
@@ -26,6 +31,7 @@ public class HoaDonXuatDAO {
     String _ex = "";
     ResultSet _rs;
     PreparedStatement statement;
+    String pathPDF = Environment.getExternalStorageDirectory().getAbsolutePath() + "/LuuHoaDon";
 
     public void CloseCONN() {
         try {
@@ -238,28 +244,6 @@ public class HoaDonXuatDAO {
         }
     }
 
-    FileInputStream fis = null;
-
-    public void LuuPdfInDatabase(String maHD, File pathPDF) {
-        try {
-            File database_filename = pathPDF;
-            fis = new FileInputStream(database_filename);
-            int fileLength = (int) pathPDF.length();
-            InputStream stream = (InputStream) new FileInputStream(pathPDF);
-            //String sqlInsert = "INSERT INTO tblPDF(MaHD,HoaDonPDF) SELECT '" + maHD + "' AS MaHD,* FROM OPENROWSET(BULK ?, SINGLE_BLOB) AS HoaDonPDF";
-            String sqlInsert = "INSERT INTO tblPDF(MaHD,HoaDonPDF) value ('1234321',?)";
-            statement = _con.prepareStatement(sqlInsert);
-            //statement.setString(1,maHD);
-            statement.setBinaryStream(1, fis, fileLength);
-            //statement.setAsciiStream(1, stream, fileLength);
-            statement.executeUpdate();
-        } catch (SQLException _ex) {
-            _ex.printStackTrace();
-        } catch (FileNotFoundException _ex) {
-            _ex.printStackTrace();
-        }
-    }
-
     public String LayMaHoaDonMoiNhat() {
         String query_SQL = "SELECT TOP 1 MaHD FROM tblHoaDonXuat ORDER BY NgayXuat DESC,MaHD DESC";
         String strMaHD = "";
@@ -276,7 +260,7 @@ public class HoaDonXuatDAO {
     }
 
     public int LayTongSoHoaDonTheoKH(String maKH) {
-        String query_SQL = "SELECT COUNT(MaKH) FROM tblHoaDonXuat WHERE MaKH='"+ maKH +"' AND NgayXuat > '2019-02-05'";
+        String query_SQL = "SELECT COUNT(MaKH) FROM tblHoaDonXuat WHERE MaKH='" + maKH + "' AND NgayXuat > '2019-02-05'";
         int intTong = 0;
         try {
             _con = connectionDB.CONN();
@@ -293,37 +277,58 @@ public class HoaDonXuatDAO {
         return intTong + 1;
     }
 
-    protected void Upload(File filePath) {
-        /*
+    public void UploadFilePDFToDatabase(String filePath) {
         try {
-            String filename = Path.GetFileNa(FileUpload1.PostedFile.FileName);
-            string contentType = FileUpload1.PostedFile.ContentType;
-            InputStream stream = (InputStream) new FileInputStream(filePath);
-
-                    byte[] allBytes = Files.readAllBytes(Paths.get(filePathi));
-                    string constr = ConfigurationManager.ConnectionStrings["constr"].ConnectionString;
-                    using (SqlConnection con = new SqlConnection(constr))
-                    {
-                        string query = "insert into tblFiles values (@Name, @ContentType, @Data)";
-                        using (SqlCommand cmd = new SqlCommand(query))
-                        {
-                            cmd.Connection = con;
-                            cmd.Parameters.AddWithValue("@Name", filename);
-                            cmd.Parameters.AddWithValue("@ContentType", contentType);
-                            cmd.Parameters.AddWithValue("@Data", bytes);
-                            con.Open();
-                            cmd.ExecuteNonQuery();
-                            con.Close();
-                        }
-                    }
-                }
-            }
-            Response.Redirect(Request.Url.AbsoluteUri);
-        } catch (FileNotFoundException e) {
+            _con = connectionDB.CONN();
+            File pdfFile = new File(filePath);
+            byte[] pdfData = new byte[(int) pdfFile.length()];
+            DataInputStream dis = new DataInputStream(new FileInputStream(pdfFile));
+            dis.readFully(pdfData);  // read from file into byte[] array
+            dis.close();
+            String strMaHD = layTenFileKhongMoRong(pdfFile.getName());
+            PreparedStatement ps = _con.prepareStatement("INSERT INTO SavePDFTable (MaHD,PDFFile) VALUES (?,?)");
+            ps.setString(1, strMaHD);
+            ps.setBytes(2, pdfData);  // byte[] array
+            ps.executeUpdate();
+            _con.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
             e.printStackTrace();
         }
-        */
     }
 
+    public static String layTenFileKhongMoRong(String fileName) {
+        if (fileName != null && fileName.length() > 0) {
+            while (fileName.contains(".")) {
+                fileName = fileName.substring(0, fileName.lastIndexOf('.'));
+            }
+        }
+        return fileName;
+    }
+
+    public void XemLaiHoaDonMoiNhat(String filePathHoaDon) {
+        try {
+            File pdfFile = new File(filePathHoaDon);
+            String strMaHD = layTenFileKhongMoRong(pdfFile.getName());
+            if (pdfFile.exists()) { // Kiểm tra tôn tại
+                pdfFile.delete(); // Xóa
+            }
+            String sqlGetFile = "Select PDFFile from SavePDFTable where [MaHD]='" + strMaHD + "' ";
+            statement = _con.prepareStatement(sqlGetFile);
+            _rs = statement.executeQuery();
+            while (_rs.next()) {
+                FileOutputStream fos = new FileOutputStream(pdfFile);
+                fos.write(_rs.getBytes("PDFFile"));
+                fos.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 }

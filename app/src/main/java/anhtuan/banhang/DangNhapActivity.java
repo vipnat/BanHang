@@ -111,9 +111,12 @@ public class DangNhapActivity extends AppCompatActivity {
             public void onClick(View v) {
                 hoaDonXuatDAO.XoaAllHoaDonXuatNull();
                 String filePathHoaDon = pathPDF + "/" + hoaDonXuatDAO.LayMaHoaDonMoiNhat() + ".pdf";
-                //openPdf();
-                File fileHoaDon = new File(filePathHoaDon);
-                if (!fileHoaDon.exists()) return;
+                // Tạo Thư Mục Chứa Nếu Chưa Có
+                File folderPath = new File(pathPDF);
+                if (!folderPath.exists())
+                    folderPath.mkdirs();
+                // Xuất File PDF Tư Database
+                hoaDonXuatDAO.XemLaiHoaDonMoiNhat(filePathHoaDon);
                 try {
                     createA4PdfPrint(filePathHoaDon);
                 } catch (IOException e) {
@@ -123,7 +126,6 @@ public class DangNhapActivity extends AppCompatActivity {
                 }
             }
         });
-
 
         btnLogin = (ImageView) findViewById(R.id.btnLogin);
         btnLogin.setBackgroundResource(R.drawable.image_button_login);
@@ -163,6 +165,7 @@ public class DangNhapActivity extends AppCompatActivity {
         // Creating a reader A5
         PdfReader reader = new PdfReader(strA5);
 
+        XuatHoaDonActivity.TaoFilePDFA5Null();
         // Creating a reader A5 Null
         PdfReader readerNull = new PdfReader(path_a5_clear);
 
