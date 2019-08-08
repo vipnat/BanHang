@@ -42,6 +42,7 @@ import java.util.List;
 
 import anhtuan.banhang.DAO.HoaDonXuatDAO;
 import anhtuan.banhang.DAO.NhanVienDAO;
+import anhtuan.banhang.DTO.HoaDonXuat;
 import anhtuan.banhang.DTO.NhanVien;
 import anhtuan.banhang.Database.ConnectionDB;
 
@@ -56,15 +57,23 @@ public class DangNhapActivity extends AppCompatActivity {
     private ImageView imgBgLogin;
 
     Spinner _spinNhanVien;
+    Spinner _spinHDX;
 
     // Cặp Đối Tượng Cho Spiner Khách Hàng
     ArrayList<NhanVien> arrayNhanVien = new ArrayList<NhanVien>();
     ArrayAdapter<NhanVien> adapterNhanVien = null;
 
+    // Cặp Đối Tượng Cho Spiner Hóa Đơn Xuất
+    ArrayList<HoaDonXuat> arrayHoaDonXuat = new ArrayList<HoaDonXuat>();
+    ArrayAdapter<HoaDonXuat> adapterHoaDonXuat = null;
+    HoaDonXuatDAO _hoaDonXuatDao = new HoaDonXuatDAO();
+    public static HoaDonXuat hoadonxuat = new HoaDonXuat();
+
     NhanVienDAO _nhanVienDao = new NhanVienDAO();
     public static NhanVien nhanVien = new NhanVien();
-    ConnectionDB connec = new ConnectionDB();
 
+
+    ConnectionDB connec = new ConnectionDB();
     public static final String KEY_DATA = "key_data";
     private Context context;
     HoaDonXuatDAO hoaDonXuatDAO = new HoaDonXuatDAO();
@@ -96,6 +105,13 @@ public class DangNhapActivity extends AppCompatActivity {
         adapterNhanVien.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         _spinNhanVien.setAdapter(adapterNhanVien);
 
+        _spinHDX = (Spinner) findViewById(R.id.spnHoaDonXuat);
+        // Cấu Hình Cho Spiner Khách Hàng
+        arrayHoaDonXuat = _hoaDonXuatDao.arrHoaDonXuat();
+        adapterHoaDonXuat = new ArrayAdapter<HoaDonXuat>(this, android.R.layout.simple_spinner_item, arrayHoaDonXuat);
+        adapterHoaDonXuat.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        _spinHDX.setAdapter(adapterHoaDonXuat);
+
         imgBgLogin = (ImageView) findViewById(R.id.imageViewLogin);
         imgBgLogin.setBackgroundResource(R.drawable.image_nen_login);
 
@@ -110,13 +126,13 @@ public class DangNhapActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 hoaDonXuatDAO.XoaAllHoaDonXuatNull();
-                String filePathHoaDon = pathPDF + "/" + hoaDonXuatDAO.LayMaHoaDonMoiNhat() + ".pdf";
+                String filePathHoaDon = pathPDF + "/" + hoadonxuat.getMaHD() + ".pdf";
                 // Tạo Thư Mục Chứa Nếu Chưa Có
                 File folderPath = new File(pathPDF);
                 if (!folderPath.exists())
                     folderPath.mkdirs();
                 // Xuất File PDF Tư Database
-                hoaDonXuatDAO.XemLaiHoaDonMoiNhat(filePathHoaDon);
+                hoaDonXuatDAO.XemLaiHoaDonTheoMaHD(filePathHoaDon);
                 try {
                     createA4PdfPrint(filePathHoaDon);
                 } catch (IOException e) {
@@ -143,18 +159,29 @@ public class DangNhapActivity extends AppCompatActivity {
             closeFormDataNull();
         }
 
+        // Select Nhân Viên
         _spinNhanVien.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 nhanVien = arrayNhanVien.get(position);
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
 
             }
         });
 
+        // Select Hóa Đơn Xuất
+        _spinHDX.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                hoadonxuat = arrayHoaDonXuat.get(position);
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
     }
     public void createA4PdfPrint(String strA5)

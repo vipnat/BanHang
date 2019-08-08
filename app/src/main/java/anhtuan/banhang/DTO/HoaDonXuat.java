@@ -2,6 +2,8 @@ package anhtuan.banhang.DTO;
 
 import java.util.Date;
 
+import anhtuan.banhang.DAO.KhachHangDAO;
+
 public class HoaDonXuat {
     String MaHD;
     String MaNhanVien;
@@ -9,6 +11,7 @@ public class HoaDonXuat {
     Double TongTien;
     String MaKH;
     Double TongTienGoc;
+    KhachHangDAO _khachHangDAO = new KhachHangDAO();
 
     public HoaDonXuat(String maHD, String maNhanVien, Date ngayXuat, Double tongTien, String maKH, Double tongTienGoc) {
         this.MaHD = maHD;
@@ -71,6 +74,9 @@ public class HoaDonXuat {
         TongTienGoc = tongTienGoc;
     }
 
-
+    public String toString() {
+        String TenKH = _khachHangDAO.get_khachHang_by_id(this.MaKH).getTenKH();
+        return this.MaHD + " - " + TenKH;
+    }
 
 }

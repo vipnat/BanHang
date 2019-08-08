@@ -31,7 +31,6 @@ public class HoaDonXuatDAO {
     String _ex = "";
     ResultSet _rs;
     PreparedStatement statement;
-    String pathPDF = Environment.getExternalStorageDirectory().getAbsolutePath() + "/LuuHoaDon";
 
     public void CloseCONN() {
         try {
@@ -43,6 +42,30 @@ public class HoaDonXuatDAO {
 
     public void OpenCONN() {
         _con = connectionDB.CONN();
+    }
+
+    ArrayList<HoaDonXuat> arrHoaDonXuat = new ArrayList<HoaDonXuat>();
+    HoaDonXuat _hoaDonXuat;
+
+    public ArrayList<HoaDonXuat> arrHoaDonXuat() {
+        try {
+            String sqlSelect = "SELECT TOP 100 * FROM  tblHoaDonXuat ORDER BY NgayXuat DESC";
+            PreparedStatement pre = _con.prepareStatement(sqlSelect);
+            _rs = pre.executeQuery();
+            while (_rs.next()) {
+                _hoaDonXuat = new HoaDonXuat();
+                _hoaDonXuat.setMaHD(_rs.getString("MaHD"));
+                _hoaDonXuat.setMaNhanVien(_rs.getString("MaNhanVien"));
+                _hoaDonXuat.setNgayXuat(_rs.getDate("NgayXuat"));
+                _hoaDonXuat.setTongTien(_rs.getDouble("TongTien"));
+                _hoaDonXuat.setMaKH(_rs.getString("MaKH"));
+                _hoaDonXuat.setTongTienGoc(_rs.getDouble("TongTienGoc"));
+                arrHoaDonXuat.add(_hoaDonXuat);
+            }
+        } catch (Exception ex) {
+            _ex = "Exceptions";
+        }
+        return arrHoaDonXuat;
     }
 
     public String LayMaHoaDonTheoNgay(String DayMonthYear) {
@@ -168,6 +191,18 @@ public class HoaDonXuatDAO {
             _con.close();
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void UpdateSoLuongMatHang(Integer soluong, String maMH) {
+        try {
+            _con = connectionDB.CONN();
+            String sqlUpdate = "UPDATE tblMatHang SET SoLuong = " + soluong + " WHERE MaMatH = '" + maMH + "'";
+            PreparedStatement statement = _con.prepareStatement(sqlUpdate);
+            statement.executeUpdate();
+            _con.close();
+        } catch (Exception ex) {
+            _ex = "Exceptions";
         }
     }
 
@@ -307,7 +342,7 @@ public class HoaDonXuatDAO {
         return fileName;
     }
 
-    public void XemLaiHoaDonMoiNhat(String filePathHoaDon) {
+    public void XemLaiHoaDonTheoMaHD(String filePathHoaDon) {
         try {
             File pdfFile = new File(filePathHoaDon);
             String strMaHD = layTenFileKhongMoRong(pdfFile.getName());

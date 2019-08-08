@@ -50,16 +50,31 @@
             android:contentDescription="@null"
             app:srcCompat="@drawable/image_button_login" />
 
-    </LinearLayout>
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingTop="20dp"
+            android:text="Xem Lại Hóa Đơn"
+            android:textStyle="bold" />
 
-    <ImageButton
-        android:id="@+id/btn_print"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginLeft="300dp"
-        android:layout_marginTop="500dp"
-        android:background="@android:color/transparent"
-        android:scaleType="fitCenter"
-        app:srcCompat="@drawable/image_print" />
+        <Spinner
+            android:id="@+id/spnHoaDonXuat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <ImageButton
+            android:id="@+id/btn_print"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="0dp"
+            android:layout_marginTop="0dp"
+            android:layout_gravity="center"
+            android:background="@android:color/transparent"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/image_print" />
+
+    </LinearLayout>
 
 </RelativeLayout>

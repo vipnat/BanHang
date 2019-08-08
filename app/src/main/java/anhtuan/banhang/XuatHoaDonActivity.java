@@ -20,6 +20,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -82,6 +84,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
     RadioButton _rdoSanPham;
     RadioButton _rdoDay;
     RadioButton _rdoDauDai;
+    CheckBox _cbxAdd;
 
     TextView lblNoCu;
     TextView lblSoLoai;
@@ -193,6 +196,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         _rdoSanPham = (RadioButton) findViewById(R.id.radioSanPham);
         _rdoDay = (RadioButton) findViewById(R.id.radioDay);
         _rdoDauDai = (RadioButton) findViewById(R.id.radioDauDai);
+        _cbxAdd = (CheckBox) findViewById(R.id.cbxAdd);
 
         _txtsoLuong = (EditText) findViewById(R.id.txtSoLuong);
         _txtdonGia = (EditText) findViewById(R.id.txtDonGia);
@@ -265,6 +269,23 @@ public class XuatHoaDonActivity extends AppCompatActivity {
             }
         });
 
+        _cbxAdd.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                String strHienThi = "";
+                if (_cbxAdd.isChecked()) {
+                    strHienThi = "Thêm Sản Phẩm.";
+                    btnPrint.setEnabled(false);
+                    btnXuatHD.setEnabled(false);
+                } else {
+                    strHienThi = "Mua Sản Phẩm.";
+                    btnPrint.setEnabled(true);
+                    btnXuatHD.setEnabled(true);
+                }
+                Toast.makeText(XuatHoaDonActivity.this, strHienThi, Toast.LENGTH_LONG).show();
+            }
+        });
+
         // Select Spinner Mặt Hàng
         _spinMatHang.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -315,13 +336,22 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                     Toast.makeText(XuatHoaDonActivity.this, "Số Lượng Phải > 0 ", Toast.LENGTH_LONG).show();
                     return;
                 }
+                MatHang mhAdd = _matHangDAO.getMatHangByID(_matHang.getMaMatH());
                 Integer intSoLuongMua = Integer.parseInt(textSL);
+
+                // Nếu cbx Thêm Sp Checked .
+                if (_cbxAdd.isChecked()) {
+                    hoaDonXuatDAO.UpdateSoLuongMatHang(intSoLuongMua, mhAdd.getMaMatH());
+                    Toast.makeText(XuatHoaDonActivity.this, "Đã Update, SL: " + intSoLuongMua, Toast.LENGTH_LONG).show();
+                    mhAdd.setSoLuong(intSoLuongMua);
+                    return;
+                }
                 if (textSL.length() == 0 || textGia.length() == 0 || textGia.equals(".") || intSoLuongMua == 0) {
                     Toast.makeText(XuatHoaDonActivity.this, "Số Lượng, Đơn Giá Phải > 0 ", Toast.LENGTH_LONG).show();
                     return;
                 }
 
-                MatHang mhAdd = _matHangDAO.getMatHangByID(_matHang.getMaMatH());
+
                 if (intSoLuongMua > mhAdd.getSoLuong()) {
                     Toast.makeText(XuatHoaDonActivity.this, "Số Lượng Còn " + mhAdd.getSoLuong() + " - Không Đủ", Toast.LENGTH_LONG).show();
                     return;
@@ -355,7 +385,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                     Toast.makeText(XuatHoaDonActivity.this, "Chưa Có Sản Phẩm !", Toast.LENGTH_LONG).show();
                     return;
                 }
-                if(!_txtTraTien.isEnabled()) {
+                if (!_txtTraTien.isEnabled()) {
                     // Mở Trả Tiền Khi Sửa Hóa Đơn.
                     _txtTraTien.setEnabled(true);
                     btnThem.setEnabled(true);
@@ -428,6 +458,11 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         btnPrint.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (lblTongTien.isEnabled()) {
+                    Toast.makeText(XuatHoaDonActivity.this, "Chưa Tạo Được Hóa Đơn !", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
                 String filePathHoaDon = pathPDF + "/" + strMaHoaDon + ".pdf";
                 //openPdf();
                 File fileHoaDon = new File(filePathHoaDon);
@@ -435,7 +470,6 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 hoaDonXuatDAO.UploadFilePDFToDatabase(filePathHoaDon);
                 try {
                     createA4PdfPrint(filePathHoaDon);
-
                     // Đóng App Khi In Hóa Đơn Sau 3s
                     handler.postAtTime(runnable, System.currentTimeMillis() + interval);
                     handler.postDelayed(runnable, interval);
@@ -507,7 +541,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         lblMaHoaDon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(lblMaHoaDon.getText().equals("In_STT"))
+                if (lblMaHoaDon.getText().equals("In_STT"))
                     lblMaHoaDon.setText(nhanVien.getTenNhanVien() + " - HĐ: " + strMaHoaDon);
                 else
                     lblMaHoaDon.setText("In_STT");
@@ -732,11 +766,9 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 switch (i) {
                     case 1: // Lấy Mã Sản Phẩm
                         soTT = soTT + 1;
-                        if(lblMaHoaDon.getText().equals("In_STT"))
-                        {
-                            _cellPDF = new PdfPCell(new Phrase(soTT +"", font14));
-                        }
-                        else {
+                        if (lblMaHoaDon.getText().equals("In_STT")) {
+                            _cellPDF = new PdfPCell(new Phrase(soTT + "", font14));
+                        } else {
                             String kieuStr = mh.getMaMatH().substring(0, 3);
                             if (kieuStr.trim().equals("DAY")) kieuStr = "D";
                             else if (kieuStr.trim().equals("DAI")) kieuStr = "Đ";
@@ -843,7 +875,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         pdfDoc.add(pdfTableTongTien);
         pdfDoc.close();
 
-        Toast.makeText(getApplicationContext(), "Xuất Hóa Đơn Thành Công !", Toast.LENGTH_LONG).show();
+        //Toast.makeText(getApplicationContext(), "Xuất Hóa Đơn Thành Công !", Toast.LENGTH_LONG).show();
 
         viewPdf(pathPDF + "/" + strMaHoaDon + ".pdf");
 
