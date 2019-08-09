@@ -75,7 +75,14 @@ public class HoaDonXuat {
     }
 
     public String toString() {
-        String TenKH = _khachHangDAO.get_khachHang_by_id(this.MaKH).getTenKH();
+        String TenKH = "";
+        try {
+            TenKH = _khachHangDAO.get_khachHang_by_id(this.MaKH).getTenKH();
+        }
+        catch (Exception ex)
+        {
+            TenKH = "...";
+        }
         return this.MaHD + " - " + TenKH;
     }
 
