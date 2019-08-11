@@ -715,7 +715,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         //Creating iTextSharp Table from the DataTable data  Table Bán Hàng
         //
         PdfPTable pdfTable = new PdfPTable(5);
-        float[] widths = new float[]{1.5f, 5f, 1.5f, 2f, 2f};
+        float[] widths = new float[]{2f, 5f, 1.5f, 1.5f, 2f};
         pdfTable.setWidths(widths);
 
         pdfTable.setWidthPercentage(95);
@@ -771,26 +771,25 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 switch (i) {
                     case 1: // Lấy Mã Sản Phẩm
                         soTT = soTT + 1;
-                        if (lblMaHoaDon.getText().equals("In_STT")) {
-                            _cellPDF = new PdfPCell(new Phrase(soTT + "", font14));
-                        } else {
-                            String kieuStr = mh.getMaMatH().substring(0, 3);
-                            if (kieuStr.trim().equals("DAY")) {
-                                kieuStr = "D";
-                                fDay = mh.getSoLuong() + fDay;
-                            } else if (kieuStr.trim().equals("DAI")) kieuStr = "Đ";
-                            else if (kieuStr.trim().equals("DAU")) {
-                                kieuStr = "Đ";
-                                fDau = mh.getSoLuong() + fDau;
-                            } else if (kieuStr.trim().equals("MSP")) {
-                                kieuStr = "";
-                                if (mh.getMaMatH().substring(3, 5).equals("50"))
-                                    fBop = mh.getSoLuong() + fBop;
-                                else
-                                    fSP = mh.getSoLuong() + fSP;
-                            }
-                            _cellPDF = new PdfPCell(new Phrase(kieuStr + mh.getMaMatH().substring(3), font14));
+                        String kieuStr = mh.getMaMatH().substring(0, 3);
+                        if (kieuStr.trim().equals("DAY")) {
+                            kieuStr = "D";
+                            fDay = mh.getSoLuong() + fDay;
+                        } else if (kieuStr.trim().equals("DAI")) kieuStr = "Đ";
+                        else if (kieuStr.trim().equals("DAU")) {
+                            kieuStr = "Đ";
+                            fDau = mh.getSoLuong() + fDau;
+                        } else if (kieuStr.trim().equals("MSP")) {
+                            kieuStr = "";
+                            if (mh.getMaMatH().substring(3, 5).equals("50"))
+                                fBop = mh.getSoLuong() + fBop;
+                            else
+                                fSP = mh.getSoLuong() + fSP;
                         }
+                        if (lblMaHoaDon.getText().equals("In_STT"))
+                            kieuStr = "(" + soTT + ")" + kieuStr;
+
+                        _cellPDF = new PdfPCell(new Phrase(kieuStr + mh.getMaMatH().substring(3), font14));
                         _cellPDF.setFixedHeight(18f);
                         _cellPDF.setHorizontalAlignment(Element.ALIGN_CENTER);
                         pdfTable.addCell(_cellPDF);
@@ -826,16 +825,16 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         }
 
         if (fSP > 0)
-            strSoLuong = (int)fSP + " Dây SP";
+            strSoLuong = (int) fSP + " Dây SP";
         if (fDau > 0)
-            strSoLuong = strSoLuong + "\n" + (int)fDau + " Đầu Ko";
+            strSoLuong = strSoLuong + "\n" + (int) fDau + " Đầu Ko";
         if (fDay > 0)
-            strSoLuong = strSoLuong + "\n" + (int)fDay + " Dây Ko";
+            strSoLuong = strSoLuong + "\n" + (int) fDay + " Dây Ko";
         if (fBop > 0)
-            strSoLuong = strSoLuong + "\n" + (int)fBop + " Bóp.";
+            strSoLuong = strSoLuong + "\n" + (int) fBop + " Bóp.";
 
         // Adding Row Tổng Tiền
-        pdfTable.addCell(new Phrase(lblSoLoai.getText().toString().replaceAll(" ",""), font14));
+        pdfTable.addCell(new Phrase(lblSoLoai.getText().toString().replaceAll(" ", ""), font14));
         PdfPCell _cellSoLuong = new PdfPCell(new Phrase(strSoLuong, font14));
         _cellSoLuong.setColspan(2);
         _cellSoLuong.setBorder(0);
@@ -911,15 +910,6 @@ public class XuatHoaDonActivity extends AppCompatActivity {
 
         viewPdf(pathPDF + "/" + strMaHoaDon + ".pdf");
 
-    }
-
-    public static void copyFile(File source, File destination) throws IOException {
-        try (FileInputStream inputStream = new FileInputStream(source);
-             FileOutputStream outputStream = new FileOutputStream(destination);) {
-            FileChannel sourceChannel = inputStream.getChannel();
-            FileChannel destinationChannel = outputStream.getChannel();
-            destinationChannel.transferFrom(sourceChannel, 0, sourceChannel.size());
-        }
     }
 
     // Method for opening a pdf file
