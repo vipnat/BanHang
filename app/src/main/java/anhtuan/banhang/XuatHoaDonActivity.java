@@ -760,6 +760,11 @@ public class XuatHoaDonActivity extends AppCompatActivity {
 
         //Adding ListView Row
         int soTT = 0;
+        String strSoLuong = "";
+        float fDay = 0;
+        float fDau = 0;
+        float fSP = 0;
+        float fBop = 0;
         for (MatHang mh : arayListView) {
             for (int i = 1; i <= 5; i++) {
                 PdfPCell _cellPDF;
@@ -770,10 +775,20 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                             _cellPDF = new PdfPCell(new Phrase(soTT + "", font14));
                         } else {
                             String kieuStr = mh.getMaMatH().substring(0, 3);
-                            if (kieuStr.trim().equals("DAY")) kieuStr = "D";
-                            else if (kieuStr.trim().equals("DAI")) kieuStr = "Đ";
-                            else if (kieuStr.trim().equals("DAU")) kieuStr = "Đ";
-                            else kieuStr = "";
+                            if (kieuStr.trim().equals("DAY")) {
+                                kieuStr = "D";
+                                fDay = mh.getSoLuong() + fDay;
+                            } else if (kieuStr.trim().equals("DAI")) kieuStr = "Đ";
+                            else if (kieuStr.trim().equals("DAU")) {
+                                kieuStr = "Đ";
+                                fDau = mh.getSoLuong() + fDau;
+                            } else if (kieuStr.trim().equals("MSP")) {
+                                kieuStr = "";
+                                if (mh.getMaMatH().substring(3, 5).equals("50"))
+                                    fBop = mh.getSoLuong() + fBop;
+                                else
+                                    fSP = mh.getSoLuong() + fSP;
+                            }
                             _cellPDF = new PdfPCell(new Phrase(kieuStr + mh.getMaMatH().substring(3), font14));
                         }
                         _cellPDF.setFixedHeight(18f);
@@ -809,15 +824,32 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 }
             }
         }
+
+        if (fSP > 0)
+            strSoLuong = (int)fSP + " Dây SP";
+        if (fDau > 0)
+            strSoLuong = strSoLuong + "\n" + (int)fDau + " Đầu Ko";
+        if (fDay > 0)
+            strSoLuong = strSoLuong + "\n" + (int)fDay + " Dây Ko";
+        if (fBop > 0)
+            strSoLuong = strSoLuong + "\n" + (int)fBop + " Bóp.";
+
         // Adding Row Tổng Tiền
-        pdfTable.addCell(new Phrase(lblSoLoai.getText().toString(), font14));
-        pdfTable.addCell(new Phrase(""));
-        pdfTable.addCell(new Phrase(lblSoLuong.getText().toString(), font14));
+        pdfTable.addCell(new Phrase(lblSoLoai.getText().toString().replaceAll(" ",""), font14));
+        PdfPCell _cellSoLuong = new PdfPCell(new Phrase(strSoLuong, font14));
+        _cellSoLuong.setColspan(2);
+        _cellSoLuong.setBorder(0);
+        _cellSoLuong.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        pdfTable.addCell(_cellSoLuong);
+
         PdfPCell _cellTong = new PdfPCell(new Phrase("Tổng: ", font14));
         _cellTong.setHorizontalAlignment(Element.ALIGN_RIGHT);
         _cellTong.setBorder(0);
         pdfTable.addCell(_cellTong);
-        pdfTable.addCell(new Phrase(strTongTienBan, font14));
+        PdfPCell _cellTongTien = new PdfPCell(new Phrase(strTongTienBan, font14));
+        _cellTongTien.setHorizontalAlignment(Element.ALIGN_LEFT);
+        _cellTongTien.setBorder(0);
+        pdfTable.addCell(_cellTongTien);
 
         //
         // Table Tính Tiền
