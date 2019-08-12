@@ -59,18 +59,31 @@
             android:text="Xem Lại Hóa Đơn"
             android:textStyle="bold" />
 
-        <Spinner
-            android:id="@+id/spnHoaDonXuat"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="25dp"
+            android:orientation="horizontal">
+
+            <Spinner
+                android:id="@+id/spnHoaDonXuat"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/txtTenKH"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:text="TextView" />
+        </LinearLayout>
 
         <ImageButton
             android:id="@+id/btn_print"
             android:layout_width="50dp"
             android:layout_height="50dp"
+            android:layout_gravity="center"
             android:layout_marginLeft="0dp"
             android:layout_marginTop="0dp"
-            android:layout_gravity="center"
             android:background="@android:color/transparent"
             android:scaleType="fitCenter"
             app:srcCompat="@drawable/image_print" />

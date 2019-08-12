@@ -20,6 +20,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.itextpdf.text.Document;
@@ -41,6 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import anhtuan.banhang.DAO.HoaDonXuatDAO;
+import anhtuan.banhang.DAO.KhachHangDAO;
 import anhtuan.banhang.DAO.NhanVienDAO;
 import anhtuan.banhang.DTO.HoaDonXuat;
 import anhtuan.banhang.DTO.NhanVien;
@@ -58,6 +60,7 @@ public class DangNhapActivity extends AppCompatActivity {
 
     Spinner _spinNhanVien;
     Spinner _spinHDX;
+    TextView _txtTenKh;
 
     // Cặp Đối Tượng Cho Spiner Khách Hàng
     ArrayList<NhanVien> arrayNhanVien = new ArrayList<NhanVien>();
@@ -77,7 +80,7 @@ public class DangNhapActivity extends AppCompatActivity {
     public static final String KEY_DATA = "key_data";
     private Context context;
     HoaDonXuatDAO hoaDonXuatDAO = new HoaDonXuatDAO();
-
+    KhachHangDAO _khachHangDAO = new KhachHangDAO();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,6 +114,8 @@ public class DangNhapActivity extends AppCompatActivity {
         adapterHoaDonXuat = new ArrayAdapter<HoaDonXuat>(this, android.R.layout.simple_spinner_item, arrayHoaDonXuat);
         adapterHoaDonXuat.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         _spinHDX.setAdapter(adapterHoaDonXuat);
+
+        _txtTenKh = (TextView) findViewById(R.id.txtTenKH);
 
         imgBgLogin = (ImageView) findViewById(R.id.imageViewLogin);
         imgBgLogin.setBackgroundResource(R.drawable.image_nen_login);
@@ -176,6 +181,7 @@ public class DangNhapActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 hoadonxuat = arrayHoaDonXuat.get(position);
+                _txtTenKh.setText(_khachHangDAO.LayKhachHangTheoMaKH(hoadonxuat.getMaKH()).getTenKH());
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) {

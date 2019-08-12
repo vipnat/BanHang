@@ -103,9 +103,11 @@ public class HoaDonXuatDAO {
             statement = _con.prepareStatement(sqlQuery);
             _rs = statement.executeQuery();
             while (_rs.next()) {
-                String deleteHDX = "DELETE FROM tblHoaDonXuat WHERE MaHD ='" + _rs.getString("MaHD") + "'";
+                String strMaHD = _rs.getString("MaHD");
+                String deleteHDX = "DELETE FROM tblHoaDonXuat WHERE MaHD ='" + strMaHD + "'";
                 statement = _con.prepareStatement(deleteHDX);
                 statement.executeUpdate();
+                XoaFilePDFTheoMaHD(strMaHD);
             }
         } catch (SQLException _ex) {
             _ex.printStackTrace();
@@ -261,24 +263,6 @@ public class HoaDonXuatDAO {
         }
     }
 
-    public void UpdatePdfInDatabase(String maHD, File pathPDF) {
-        try {
-            int fileLength = (int) pathPDF.length();
-            InputStream stream = (InputStream) new FileInputStream(pathPDF);
-            //String sqlUpdate = "UPDATE tblPDF SET HoaDonPDF = (SELECT BulkColumn FROM OPENROWSET (BULK '" + pathPDF + "', SINGLE_BLOB) a) WHERE MaHD ='" + maHD + "'";
-            String sqlUpdate = "UPDATE tblPDF SET HoaDonPDF =? WHERE MaHD = ?";
-            statement = _con.prepareStatement(sqlUpdate);
-            statement.setBlob(1, stream);
-            statement.setString(2, maHD);
-            //statement.setString(2, maHD);
-            statement.executeUpdate();
-        } catch (SQLException _ex) {
-            _ex.printStackTrace();
-        } catch (FileNotFoundException _ex) {
-            _ex.printStackTrace();
-        }
-    }
-
     public String LayMaHoaDonMoiNhat() {
         String query_SQL = "SELECT TOP 1 MaHD FROM tblHoaDonXuat ORDER BY NgayXuat DESC,MaHD DESC";
         String strMaHD = "";
@@ -340,6 +324,17 @@ public class HoaDonXuatDAO {
             }
         }
         return fileName;
+    }
+
+    public void XoaFilePDFTheoMaHD(String strMaHD){
+        String deletePDF = "DELETE FROM SavePDFTable WHERE MaHD ='" + strMaHD + "'";
+        try {
+            statement = _con.prepareStatement(deletePDF);
+            statement.executeQuery();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void XemLaiHoaDonTheoMaHD(String filePathHoaDon) {

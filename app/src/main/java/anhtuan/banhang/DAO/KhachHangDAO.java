@@ -38,7 +38,7 @@ public class KhachHangDAO {
         return arrKhachHang;
     }
 
-    public KhachHang get_khachHang_by_id(String strId) {
+    public KhachHang LayKhachHangTheoMaKH(String strId) {
         try {
             String sqlSelect = "SELECT * FROM tblKhachHang WHERE MaKH = '" + strId + "'";
             PreparedStatement pre = _con.prepareStatement(sqlSelect);
