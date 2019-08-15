@@ -32,6 +32,10 @@ public class HoaDonXuatDAO {
     ResultSet _rs;
     PreparedStatement statement;
 
+    public void OpenCONN() {
+        _con = connectionDB.CONN();
+    }
+
     public void CloseCONN() {
         try {
             _con.close();
@@ -40,16 +44,12 @@ public class HoaDonXuatDAO {
         }
     }
 
-    public void OpenCONN() {
-        _con = connectionDB.CONN();
-    }
-
     ArrayList<HoaDonXuat> arrHoaDonXuat = new ArrayList<HoaDonXuat>();
     HoaDonXuat _hoaDonXuat;
 
     public ArrayList<HoaDonXuat> arrHoaDonXuat() {
         try {
-            String sqlSelect = "SELECT TOP 100 * FROM  tblHoaDonXuat ORDER BY NgayXuat DESC";
+            String sqlSelect = "SELECT TOP 100 * FROM  tblHoaDonXuat ORDER BY NgayXuat DESC, MaHD DESC";
             PreparedStatement pre = _con.prepareStatement(sqlSelect);
             _rs = pre.executeQuery();
             while (_rs.next()) {

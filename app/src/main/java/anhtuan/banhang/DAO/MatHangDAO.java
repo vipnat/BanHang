@@ -18,7 +18,6 @@ public class MatHangDAO {
     MatHang _matHang;
 
     public ArrayList<MatHang> getArrMatHang(String _maLoai) {
-
         try {
             _con = connectionDB.CONN();
             String sqlSelect = "SELECT * FROM tblMatHang WHERE SUBSTRING(MaMatH,1,3) = '" + _maLoai + "'";

@@ -61,6 +61,7 @@ public class DangNhapActivity extends AppCompatActivity {
     Spinner _spinNhanVien;
     Spinner _spinHDX;
     TextView _txtTenKh;
+    ImageView _btnThuChi;
 
     // Cặp Đối Tượng Cho Spiner Khách Hàng
     ArrayList<NhanVien> arrayNhanVien = new ArrayList<NhanVien>();
@@ -100,6 +101,7 @@ public class DangNhapActivity extends AppCompatActivity {
         if (!isExternalStorageReadable())
             return;
 
+        hoaDonXuatDAO.XoaAllHoaDonXuatNull();
 
         _spinNhanVien = (Spinner) findViewById(R.id.spnNhanVien);
         // Cấu Hình Cho Spiner Khách Hàng
@@ -109,11 +111,7 @@ public class DangNhapActivity extends AppCompatActivity {
         _spinNhanVien.setAdapter(adapterNhanVien);
 
         _spinHDX = (Spinner) findViewById(R.id.spnHoaDonXuat);
-        // Cấu Hình Cho Spiner Khách Hàng
-        arrayHoaDonXuat = _hoaDonXuatDao.arrHoaDonXuat();
-        adapterHoaDonXuat = new ArrayAdapter<HoaDonXuat>(this, android.R.layout.simple_spinner_item, arrayHoaDonXuat);
-        adapterHoaDonXuat.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        _spinHDX.setAdapter(adapterHoaDonXuat);
+        CauHinhSpinerHoaDonXuat();
 
         _txtTenKh = (TextView) findViewById(R.id.txtTenKH);
 
@@ -130,7 +128,6 @@ public class DangNhapActivity extends AppCompatActivity {
         btnPrint.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                hoaDonXuatDAO.XoaAllHoaDonXuatNull();
                 String filePathHoaDon = pathPDF + "/" + hoadonxuat.getMaHD() + ".pdf";
                 // Tạo Thư Mục Chứa Nếu Chưa Có
                 File folderPath = new File(pathPDF);
@@ -154,8 +151,8 @@ public class DangNhapActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, XuatHoaDonActivity.class);
-                intent.putExtra(KEY_DATA, nhanVien.getMaNhanVien().toString());
-                startActivity(intent);
+                intent.putExtra(KEY_DATA, nhanVien.getMaNhanVien());
+                startActivityForResult(intent,123);
             }
         });
 
@@ -183,13 +180,42 @@ public class DangNhapActivity extends AppCompatActivity {
                 hoadonxuat = arrayHoaDonXuat.get(position);
                 _txtTenKh.setText(_khachHangDAO.LayKhachHangTheoMaKH(hoadonxuat.getMaKH()).getTenKH());
             }
+
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
 
             }
         });
 
+        _btnThuChi = (ImageView) findViewById(R.id.btnThuChi);
+        //
+        // Button Thu Chi Click
+        //
+        _btnThuChi.setOnClickListener(new View.OnClickListener() {
+                                          @Override
+                                          public void onClick(View v) {
+                                              Intent intent = new Intent(context, ThuChiActivity.class);
+                                              startActivityForResult(intent, 123);
+                                          }
+                                      }
+        );
     }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK && requestCode == 123) {
+            CauHinhSpinerHoaDonXuat();
+        }
+    }
+
+    public void CauHinhSpinerHoaDonXuat(){
+        arrayHoaDonXuat.clear();
+        // Cấu Hình Cho Spiner Hóa Đơn Xuất
+        arrayHoaDonXuat = _hoaDonXuatDao.arrHoaDonXuat();
+        adapterHoaDonXuat = new ArrayAdapter<HoaDonXuat>(this, android.R.layout.simple_spinner_item, arrayHoaDonXuat);
+        adapterHoaDonXuat.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        _spinHDX.setAdapter(adapterHoaDonXuat);
+    }
+
     public void createA4PdfPrint(String strA5)
             throws IOException, DocumentException {
         File fileA4 = new File(path_a4_print);
@@ -234,6 +260,7 @@ public class DangNhapActivity extends AppCompatActivity {
 
         viewPdf(path_a4_print);
     }
+
     //
     //  Class Xoay File PDF
     //

@@ -53,11 +53,9 @@ import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -73,11 +71,13 @@ import anhtuan.banhang.DAO.KhachHangDAO;
 import anhtuan.banhang.DAO.ListViewMatHangAdapter;
 import anhtuan.banhang.DAO.MatHangDAO;
 import anhtuan.banhang.DAO.NhanVienDAO;
+import anhtuan.banhang.DAO.ThuChiDAO;
 import anhtuan.banhang.DTO.DanhSachMatHang;
 import anhtuan.banhang.DTO.HoaDonXuat;
 import anhtuan.banhang.DTO.KhachHang;
 import anhtuan.banhang.DTO.MatHang;
 import anhtuan.banhang.DTO.NhanVien;
+import anhtuan.banhang.DTO.ThuChi;
 
 public class XuatHoaDonActivity extends AppCompatActivity {
     RadioGroup _grRadio;
@@ -144,7 +144,9 @@ public class XuatHoaDonActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_xuat_hoa_don);
+
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);// Không Tự Động Chọn EditText
         //this.requestWindowFeature(Window.FEATURE_NO_TITLE);  // Không Tittle
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();  // Đọc Ghi PDF
@@ -250,7 +252,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 dsMatHang.deleteMatHangList(matHang);
                 //Mỗi lần thêm xong thì cập nhập lại ListView
                 loadListMatHangByDanhSach(dsMatHang);
-                Toast.makeText(XuatHoaDonActivity.this, "Đã Xóa " + matHang, Toast.LENGTH_LONG).show();
+                Toast.makeText(XuatHoaDonActivity.this, "Đã Xóa " + matHang, Toast.LENGTH_SHORT).show();
                 setThongTinKetQua();
                 if (arayListView.size() <= 0) {
                     _spinKH.setEnabled(true);
@@ -282,7 +284,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                     btnPrint.setEnabled(true);
                     btnXuatHD.setEnabled(true);
                 }
-                Toast.makeText(XuatHoaDonActivity.this, strHienThi, Toast.LENGTH_LONG).show();
+                Toast.makeText(XuatHoaDonActivity.this, strHienThi, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -333,7 +335,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 String textSL = _txtsoLuong.getText().toString();
                 String textGia = _txtdonGia.getText().toString();
                 if (textSL.length() == 0) {
-                    Toast.makeText(XuatHoaDonActivity.this, "Số Lượng Phải > 0 ", Toast.LENGTH_LONG).show();
+                    Toast.makeText(XuatHoaDonActivity.this, "Số Lượng Phải > 0 ", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 MatHang mhAdd = _matHangDAO.getMatHangByID(_matHang.getMaMatH());
@@ -342,23 +344,23 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 // Nếu cbx Thêm Sp Checked .
                 if (_cbxAdd.isChecked()) {
                     hoaDonXuatDAO.UpdateSoLuongMatHang(intSoLuongMua, mhAdd.getMaMatH());
-                    Toast.makeText(XuatHoaDonActivity.this, "Đã Update, SL: " + intSoLuongMua, Toast.LENGTH_LONG).show();
+                    Toast.makeText(XuatHoaDonActivity.this, "Đã Update, SL: " + intSoLuongMua, Toast.LENGTH_SHORT).show();
                     mhAdd.setSoLuong(intSoLuongMua);
                     return;
                 }
                 if (textSL.length() == 0 || textGia.length() == 0 || textGia.equals(".") || intSoLuongMua == 0) {
-                    Toast.makeText(XuatHoaDonActivity.this, "Số Lượng, Đơn Giá Phải > 0 ", Toast.LENGTH_LONG).show();
+                    Toast.makeText(XuatHoaDonActivity.this, "Số Lượng, Đơn Giá Phải > 0 ", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
 
                 if (intSoLuongMua > mhAdd.getSoLuong()) {
-                    Toast.makeText(XuatHoaDonActivity.this, "Số Lượng Còn " + mhAdd.getSoLuong() + " - Không Đủ", Toast.LENGTH_LONG).show();
+                    Toast.makeText(XuatHoaDonActivity.this, "Số Lượng Còn " + mhAdd.getSoLuong() + " - Không Đủ", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 Float fGiaban = Float.parseFloat(textGia);
                 if (fGiaban <= 0) {
-                    Toast.makeText(XuatHoaDonActivity.this, "Giá Bán Phải > 0", Toast.LENGTH_LONG).show();
+                    Toast.makeText(XuatHoaDonActivity.this, "Giá Bán Phải > 0", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 _matHang.setSoLuong(intSoLuongMua);
@@ -468,6 +470,9 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 File fileHoaDon = new File(filePathHoaDon);
                 if (!fileHoaDon.exists()) return;
                 hoaDonXuatDAO.UploadFilePDFToDatabase(filePathHoaDon);
+
+                ThemThuChiVaoDatabase();
+
                 try {
                     createA4PdfPrint(filePathHoaDon);
                     // Đóng App Khi In Hóa Đơn Sau 3s
@@ -550,35 +555,30 @@ public class XuatHoaDonActivity extends AppCompatActivity {
 
     }
 
+    private void ThemThuChiVaoDatabase() {
+        // Tạo Thu Chi
+        ThuChi thuChi = new ThuChi();
+        thuChi.setNgay(hoaDonXuat.getNgayXuat());
+        thuChi.setMaHD(strMaHoaDon);
+        thuChi.setGhiChu(_khachHang.getTenKH());
+        thuChi.setSoTien( Integer.parseInt(_txtTraTien.getText().toString()));
+        thuChi.setThu1Chi0(true);
+        ThuChiDAO thuChiDAO = new ThuChiDAO();
+        thuChiDAO.ThemThuChiVaoDatabase(thuChi);
+    }
+
     // Đong Form Sau 10s
     private final int interval = 3000; // 3 Second
     private Handler handler = new Handler();
     private Runnable runnable = new Runnable() {
         public void run() {
             Toast.makeText(XuatHoaDonActivity.this, "Đã Hoàn Thành Hóa Đơn!", Toast.LENGTH_LONG).show();
+
+            setResult(RESULT_OK, null);
             finish();
         }
     };
 
-    private void closeForm() {
-        AlertDialog.Builder b = new AlertDialog.Builder(this);
-        b.setTitle("Thông Báo");
-        b.setMessage("Đã Hoàn Thành Hóa Đơn ! Đóng App ?");
-        b.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                finish();
-            }
-        });
-        b.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            @Override
-
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-        b.create().show();
-    }
 
     private void LayGiaBanLenEditText() {
         // Set Gia Ban
@@ -598,7 +598,6 @@ public class XuatHoaDonActivity extends AppCompatActivity {
         tongTienBan = new DecimalFormat("###,###").format(dsMatHang.getTongTienList()).replaceAll(",", ".");
         lblTongTien.setText("+$:" + tongTienBan);
 
-        //lblTongTien.setText("+$:" + new DecimalFormat("###,###").format(dsMatHang.getTongTienList()).replaceAll(",", "."));
     }
 
     /**

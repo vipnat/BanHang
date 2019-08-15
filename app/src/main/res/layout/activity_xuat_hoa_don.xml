@@ -163,7 +163,6 @@
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentEnd="true"
                 android:layout_weight="9">
-
             </ListView>
 
             <LinearLayout

@@ -8,21 +8,23 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import anhtuan.banhang.DTO.MatHang;
+import anhtuan.banhang.DTO.ThuChi;
 import anhtuan.banhang.R;
 
-public class ListViewMatHangAdapter extends ArrayAdapter {
+public class ListViewThuChiAdapter extends ArrayAdapter {
     Activity activity;//activity chứa listview
-    ArrayList<MatHang> myArray = null;
+    ArrayList<ThuChi> myArrayThuChi = null;
     int layoutId;
 
-    public ListViewMatHangAdapter(Activity activity, int layoutId, ArrayList<MatHang> _arayList) {
+    public ListViewThuChiAdapter(Activity activity, int layoutId, ArrayList<ThuChi> _arayList) {
         super(activity, layoutId, _arayList);
         this.activity = activity;
         this.layoutId = layoutId;
-        this.myArray = _arayList;
+        this.myArrayThuChi = _arayList;
     }
 
     //hàm hiện thị từng item lên listview
@@ -34,22 +36,18 @@ public class ListViewMatHangAdapter extends ArrayAdapter {
             convertView = inflater.inflate(layoutId, null);
         }
         //lấy các textview trong mỗi view
-        TextView tvTen = (TextView) convertView.findViewById(R.id._lblMaMH);
-        TextView tvSL = (TextView) convertView.findViewById(R.id._lblSL);
-        TextView tvGia = (TextView) convertView.findViewById(R.id._lblGia);
-        TextView tvTTien = (TextView) convertView.findViewById(R.id._lblTong);
+        TextView txtThuChi = (TextView) convertView.findViewById(R.id.lblThuChi);
+        TextView txtNgay = (TextView) convertView.findViewById(R.id.lblNgay);
+        TextView txtSoTien = (TextView) convertView.findViewById(R.id.lblSoTien);
+        TextView txtGhiChu = (TextView) convertView.findViewById(R.id.lblGhiChu);
 
         //hiển thị dư liệu lên từng item của listview ở vị trí position
-        MatHang matHang = myArray.get(position);
-        tvTen.setText(matHang.getMaMatH());
-        String strSL = (new DecimalFormat("##")).format(matHang.getSoLuong());
-        tvSL.setText(strSL);
-        float fDonGia = new Float(matHang.getDonGia());
-        DecimalFormat fm = new DecimalFormat("#.0");
-        tvGia.setText(fDonGia - (int) fDonGia > 0 ? fm.format(fDonGia).replaceAll(",",".") + "" : (int) fDonGia + "");
-        double tongTien = matHang.getSoLuong() * matHang.getDonGia();
-        tvTTien.setText(tongTien != (int) tongTien ? fm.format(tongTien).replaceAll(",",".") + "" : (int) tongTien + "");
-
+        ThuChi thuChi = myArrayThuChi.get(position);
+        txtThuChi.setText(thuChi.getThu1Chi0() == true ? "Thu" : "Chi");
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM");
+        txtNgay.setText(sdf.format(thuChi.getNgay()));
+        txtSoTien.setText(thuChi.getSoTien()+"");
+        txtGhiChu.setText(thuChi.getMaHD().equals("")? "Id: "+thuChi.getId():thuChi.getMaHD());
         return convertView;//trả về 1 view khi đã thiết đặt xong
     }
 }

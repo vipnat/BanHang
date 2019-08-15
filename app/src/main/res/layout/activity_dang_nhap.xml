@@ -16,6 +16,15 @@
         android:scaleType="centerCrop"
         app:srcCompat="@drawable/image_nen_login" />
 
+    <ImageView
+        android:id="@+id/btnThuChi"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="29dp"
+        app:srcCompat="@drawable/image_thuchi" />
+
     <LinearLayout
         android:id="@+id/linearLogin"
         android:layout_width="match_parent"
