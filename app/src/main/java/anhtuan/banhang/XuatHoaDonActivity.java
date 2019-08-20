@@ -471,7 +471,8 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 if (!fileHoaDon.exists()) return;
                 hoaDonXuatDAO.UploadFilePDFToDatabase(filePathHoaDon);
 
-                ThemThuChiVaoDatabase();
+                if (!_txtTraTien.getText().toString().equals(""))
+                    ThemThuChiVaoDatabase();
 
                 try {
                     createA4PdfPrint(filePathHoaDon);

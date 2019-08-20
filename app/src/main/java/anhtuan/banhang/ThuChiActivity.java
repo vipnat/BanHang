@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 
+import anhtuan.banhang.DAO.HoaDonXuatDAO;
 import anhtuan.banhang.DAO.ListViewThuChiAdapter;
 import anhtuan.banhang.DAO.ThuChiDAO;
 import anhtuan.banhang.DTO.DanhSachThuChi;
@@ -51,7 +52,9 @@ public class ThuChiActivity extends AppCompatActivity {
     ArrayList<ThuChi> arayListThuChi = new ArrayList<ThuChi>();
     ListViewThuChiAdapter adapterThuChi = null;
 
+    HoaDonXuatDAO hoaDonXuatDAO = new HoaDonXuatDAO();
     ThuChiDAO thuChiDAO = new ThuChiDAO();
+
     ThuChi _thuChi;
     Date dateTuNgay, dateDenNgay;
 
@@ -87,7 +90,7 @@ public class ThuChiActivity extends AppCompatActivity {
     public void showDialog() throws Exception {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Thông Báo");
-        builder.setMessage("Bạn Có Muốn Xóa Thông Tin? " + (_thuChi.getMaHD().equals("") ? "Id:" + _thuChi.getId() : "Mã HĐ: " + _thuChi.getMaHD()));
+        builder.setMessage("Bạn Có Muốn Xóa Thông Tin? " + "Id:" + _thuChi.getId() + "\nGhi Chú:" + _thuChi.getGhiChu());
         builder.setPositiveButton("Có", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 thuChiDAO.XoaThuChiTrongDatabase(_thuChi);
@@ -122,7 +125,7 @@ public class ThuChiActivity extends AppCompatActivity {
                 intTongChi += mh.getSoTien() * 1000;
         }
         DecimalFormat formatter = new DecimalFormat("###,###,###");
-        _lblTongThuChi.setText("Tổng : Thu " +  formatter.format(intTongThu) + "  |   Chi " + formatter.format(intTongChi));
+        _lblTongThuChi.setText("Tổng : Thu " + formatter.format(intTongThu) + "  |   Chi " + formatter.format(intTongChi));
     }
 
 
@@ -133,7 +136,10 @@ public class ThuChiActivity extends AppCompatActivity {
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 try {
                     _thuChi = arayListThuChi.get(position);
-                    showDialog();
+                    if (!hoaDonXuatDAO.KiemTraTonTaiTrongChiTietHoaDon(_thuChi.getMaHD()))
+                        showDialog();
+                    else
+                        Toast.makeText(ThuChiActivity.this, "Phải Xóa Hóa Đơn Bán.", Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -155,8 +161,9 @@ public class ThuChiActivity extends AppCompatActivity {
                     strHDID = " - Mã HĐ: " + _thuChi.getMaHD();
 
                 SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy");
+                DecimalFormat formatter = new DecimalFormat("###,###,###");
                 String message = (_thuChi.getThu1Chi0() == true ? "THU" : "CHI") + strHDID + "\nNgày: " + sdf.format(_thuChi.getNgay()) + "\n" +
-                        "Số Tiền : " + _thuChi.getSoTien() + ".000\nGhi Chú: " +
+                        "Số Tiền : " + formatter.format(_thuChi.getSoTien()) + "\nGhi Chú: " +
                         _thuChi.getGhiChu();
                 builder.setMessage(message);
                 builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
@@ -215,7 +222,7 @@ public class ThuChiActivity extends AppCompatActivity {
                 }
                 _thuChi.setMaHD("");
                 _thuChi.setSoTien(Integer.parseInt(textSL));
-                _thuChi.setGhiChu(_ghiChu.getText().toString().trim());
+                _thuChi.setGhiChu(VietHoaChuCaiDau(_ghiChu.getText().toString().trim()));
                 thuChiDAO.ThemThuChiVaoDatabase(_thuChi);
                 Toast.makeText(ThuChiActivity.this, "Đã Thêm.", Toast.LENGTH_SHORT).show();
 
@@ -251,6 +258,17 @@ public class ThuChiActivity extends AppCompatActivity {
                         myCalendar.get(Calendar.DAY_OF_MONTH)).show();
             }
         });
+    }
+
+    String VietHoaChuCaiDau(String name) {
+        char[] array = name.toCharArray();
+        array[0] = Character.toUpperCase(array[0]);
+        for (int i = 1; i < array.length; i++) {
+            if (Character.isWhitespace(array[i - 1])) {
+                array[i] = Character.toUpperCase(array[i]);
+            }
+        }
+        return new String(array);
     }
 
     Boolean blDate = true;
@@ -292,6 +310,7 @@ public class ThuChiActivity extends AppCompatActivity {
             }
             if (myCalendar.getTime().before(dateTuNgay)) {
                 Toast.makeText(ThuChiActivity.this, "Phải Lớn Hơn Ngày Bắt Đầu Xem", Toast.LENGTH_LONG).show();
+                _denNgay.setText(sdf.format(dateTuNgay));
                 return;
             }
             if (myCalendar.getTime().after(date)) {
