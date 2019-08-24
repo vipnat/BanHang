@@ -40,6 +40,7 @@ public class ThuChiActivity extends AppCompatActivity {
     EditText _ghiChu;
     EditText _tuNgay;
     EditText _denNgay;
+    EditText _ngayNhap;
     TextView _lblTongThuChi;
 
     CheckBox _cbThuChi;
@@ -75,6 +76,7 @@ public class ThuChiActivity extends AppCompatActivity {
 
         _tuNgay = (EditText) findViewById(R.id.txtDate1);
         _denNgay = (EditText) findViewById(R.id.txtDate2);
+        _ngayNhap = (EditText) findViewById(R.id.txtNgayNhap);
         _btnSearch = (ImageView) findViewById(R.id.btnSearch);
 
         _listThuChi = (ListView) findViewById(R.id._listviewThuChi);
@@ -85,6 +87,10 @@ public class ThuChiActivity extends AppCompatActivity {
                 this, R.layout.item_thu_chi,
                 arayListThuChi/*thiết lập data source*/);
         _listThuChi.setAdapter(adapterThuChi);//gán Adapter vào Lisview
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy");
+        Date date = new Date();
+        _ngayNhap.setText(sdf.format(date));
     }
 
     public void showDialog() throws Exception {
@@ -220,8 +226,16 @@ public class ThuChiActivity extends AppCompatActivity {
                     Toast.makeText(ThuChiActivity.this, "Số Tiền Phải > 0 ", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                SimpleDateFormat frmDateThuChi = new SimpleDateFormat("dd/MM/yy");
+                Date dateNgayNhap;
+                try {
+                    dateNgayNhap = frmDateThuChi.parse(_ngayNhap.getText().toString());
+                } catch (ParseException e) {
+                    dateNgayNhap = new Date();
+                }
                 _thuChi.setMaHD("");
                 _thuChi.setSoTien(Integer.parseInt(textSL));
+                _thuChi.setNgay(dateNgayNhap);
                 _thuChi.setGhiChu(VietHoaChuCaiDau(_ghiChu.getText().toString().trim()));
                 thuChiDAO.ThemThuChiVaoDatabase(_thuChi);
                 Toast.makeText(ThuChiActivity.this, "Đã Thêm.", Toast.LENGTH_SHORT).show();
@@ -258,6 +272,18 @@ public class ThuChiActivity extends AppCompatActivity {
                         myCalendar.get(Calendar.DAY_OF_MONTH)).show();
             }
         });
+
+        _ngayNhap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                blngayNhap = true;
+                // TODO Auto-generated method stub
+                new DatePickerDialog(ThuChiActivity.this, date, myCalendar
+                        .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
+                        myCalendar.get(Calendar.DAY_OF_MONTH)).show();
+            }
+        });
+
     }
 
     String VietHoaChuCaiDau(String name) {
@@ -272,6 +298,7 @@ public class ThuChiActivity extends AppCompatActivity {
     }
 
     Boolean blDate = true;
+    Boolean blngayNhap = false;
     final Calendar myCalendar = Calendar.getInstance();
     DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
         @Override
@@ -287,6 +314,10 @@ public class ThuChiActivity extends AppCompatActivity {
     private void updateTextDate(Boolean _blDate) {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy");
         Date date = new Date();
+        if (blngayNhap){
+            _ngayNhap.setText(sdf.format(myCalendar.getTime()));
+            blngayNhap = false;
+        }else
         if (_blDate) {
             if (myCalendar.getTime().after(date)) {
                 Toast.makeText(ThuChiActivity.this, "Không Lớn Hơn Ngày Hiện Tại", Toast.LENGTH_LONG).show();

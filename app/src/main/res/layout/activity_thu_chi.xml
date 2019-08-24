@@ -33,14 +33,30 @@
                 android:focusable="true"
                 android:focusableInTouchMode="true">
 
-                <EditText
-                    android:id="@+id/txtSoTien"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:ems="10"
-                    android:hint="Số Tiền"
-                    android:inputType="number" />
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/txtSoTien"
+                        android:layout_width="50dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="Số Tiền"
+                        android:inputType="number" />
+
+                    <EditText
+                        android:id="@+id/txtNgayNhap"
+                        android:layout_width="70dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="Ngay Nhap"
+                        android:inputType="date"
+                        android:clickable="true"
+                        android:focusable="false"
+                        android:enabled="true" />
+                </LinearLayout>
 
                 <CheckBox
                     android:id="@+id/cbxThuChi"
@@ -69,10 +85,10 @@
                     android:id="@+id/btnAddThuChi"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:layout_gravity="left"
                     android:layout_weight="99"
                     android:background="@android:color/transparent"
                     android:scaleType="fitCenter"
-                    android:layout_gravity="left"
                     app:srcCompat="@drawable/image_add" />
             </TableRow>
             <TableRow

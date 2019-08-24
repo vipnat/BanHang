@@ -82,9 +82,8 @@ public class ThuChiDAO {
 
     public void ThemThuChiVaoDatabase(ThuChi thuChi) {
         SimpleDateFormat frmDate = new SimpleDateFormat("MM/dd/yyyy");
-        String ngayBan = frmDate.format(new Date()); // Ngày Hiện Tại
         OpenCONN();
-        String strInsert = "INSERT INTO [dbo].[tblThuChi] ([MaHD] ,[Ngay] ,[SoTien] ,[GhiChu] ,[Thu1Chi0]) VALUES (N'" + thuChi.getMaHD() + "',N'" + ngayBan + "',N'" + thuChi.getSoTien() + "',N'" + (thuChi.getGhiChu() == "" ? ngayBan : thuChi.getGhiChu()) + "',N'" + (thuChi.getThu1Chi0() == true ? 1 : 0) + "')";
+        String strInsert = "INSERT INTO [dbo].[tblThuChi] ([MaHD] ,[Ngay] ,[SoTien] ,[GhiChu] ,[Thu1Chi0]) VALUES (N'" + thuChi.getMaHD() + "',N'" + frmDate.format(thuChi.getNgay()) + "',N'" + thuChi.getSoTien() + "',N'" + (thuChi.getGhiChu() == "" ?  frmDate.format(thuChi.getNgay()) : thuChi.getGhiChu()) + "',N'" + (thuChi.getThu1Chi0() == true ? 1 : 0) + "')";
         try {
             statement = _con.prepareStatement(strInsert);
             statement.executeUpdate();
