@@ -9,6 +9,7 @@ public class ThuChi {
     Integer SoTien;
     String GhiChu;
     Boolean Thu1Chi0;
+    Double TienTrongNha;
 
     public void setId(Integer id) {
         Id = id;
@@ -56,6 +57,14 @@ public class ThuChi {
 
     public Boolean getThu1Chi0() {
         return Thu1Chi0;
+    }
+
+    public Double getTienTrongNha() {
+        return TienTrongNha;
+    }
+
+    public void setTienTrongNha(Double tienTrongNha) {
+        TienTrongNha = tienTrongNha;
     }
 
     @Override

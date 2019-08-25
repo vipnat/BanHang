@@ -1,15 +1,18 @@
 package anhtuan.banhang;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
@@ -42,6 +45,7 @@ public class ThuChiActivity extends AppCompatActivity {
     EditText _denNgay;
     EditText _ngayNhap;
     TextView _lblTongThuChi;
+    TextView _lblTienTrongNha;
 
     CheckBox _cbThuChi;
     ImageView _btnAddThuChi;
@@ -58,6 +62,8 @@ public class ThuChiActivity extends AppCompatActivity {
 
     ThuChi _thuChi;
     Date dateTuNgay, dateDenNgay;
+    DecimalFormat tienformatter = new DecimalFormat("###,###,###");
+    SimpleDateFormat frmDateddMMyy = new SimpleDateFormat("dd/MM/yy");
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -71,6 +77,7 @@ public class ThuChiActivity extends AppCompatActivity {
         _soTien = (EditText) findViewById(R.id.txtSoTien);
         _ghiChu = (EditText) findViewById(R.id.txtGhiChu);
         _lblTongThuChi = (TextView) findViewById(R.id.lblTongThuChi);
+        _lblTienTrongNha = (TextView) findViewById(R.id.lblTienTrongNha);
         _cbThuChi = (CheckBox) findViewById(R.id.cbxThuChi);
         _btnAddThuChi = (ImageView) findViewById(R.id.btnAddThuChi);
 
@@ -88,9 +95,8 @@ public class ThuChiActivity extends AppCompatActivity {
                 arayListThuChi/*thiết lập data source*/);
         _listThuChi.setAdapter(adapterThuChi);//gán Adapter vào Lisview
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy");
         Date date = new Date();
-        _ngayNhap.setText(sdf.format(date));
+        _ngayNhap.setText(frmDateddMMyy.format(date));
     }
 
     public void showDialog() throws Exception {
@@ -99,7 +105,19 @@ public class ThuChiActivity extends AppCompatActivity {
         builder.setMessage("Bạn Có Muốn Xóa Thông Tin? " + "Id:" + _thuChi.getId() + "\nGhi Chú:" + _thuChi.getGhiChu());
         builder.setPositiveButton("Có", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
+                double tienTrongNhaMoiNhat = thuChiDAO.LayTongTienMoiNhat();
+                double soTienXoaDi = _thuChi.getSoTien();
                 thuChiDAO.XoaThuChiTrongDatabase(_thuChi);
+                ThuChi thu_Chi = thuChiDAO.LayThuChiMoiNhat();
+                if (_thuChi.getThu1Chi0())  // Nếu là Thu
+                    thu_Chi.setTienTrongNha(tienTrongNhaMoiNhat - soTienXoaDi);
+                else  // Nếu là Chi
+                    thu_Chi.setTienTrongNha(tienTrongNhaMoiNhat + soTienXoaDi);
+
+                // Cập nhập lại
+                thuChiDAO.UpdateThuChiTrongDatabase(thu_Chi);
+                _lblTienTrongNha.setText(tienformatter.format(thu_Chi.getTienTrongNha()));
+
                 //xóa danh sách cũ
                 arayListThuChi.clear();
                 //Mỗi lần xóa xong thì cập nhập lại ListView
@@ -108,7 +126,8 @@ public class ThuChiActivity extends AppCompatActivity {
                 //cập nhật lại ListView
                 adapterThuChi.notifyDataSetChanged();
 
-                Toast.makeText(ThuChiActivity.this, "Đã Xóa " + (_thuChi.getMaHD().equals("") ? "Id:" + _thuChi.getId() : _thuChi.getMaHD()), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ThuChiActivity.this, "Đã Xóa " + (_thuChi.getMaHD().equals("") ? "" +
+                        "Id:" + _thuChi.getId() : _thuChi.getMaHD()), Toast.LENGTH_SHORT).show();
                 dialog.dismiss();
             }
         });
@@ -130,10 +149,9 @@ public class ThuChiActivity extends AppCompatActivity {
             else
                 intTongChi += mh.getSoTien() * 1000;
         }
-        DecimalFormat formatter = new DecimalFormat("###,###,###");
-        _lblTongThuChi.setText("Tổng : Thu " + formatter.format(intTongThu) + "  |   Chi " + formatter.format(intTongChi));
-    }
 
+        _lblTongThuChi.setText("(+):Thu " + tienformatter.format(intTongThu) + "  |   Chi " + tienformatter.format(intTongChi));
+    }
 
     private void addEventForm() {
         // Sự Kiện Nhấn Giữ Xóa Item Trên ListView
@@ -166,10 +184,8 @@ public class ThuChiActivity extends AppCompatActivity {
                 else
                     strHDID = " - Mã HĐ: " + _thuChi.getMaHD();
 
-                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy");
-                DecimalFormat formatter = new DecimalFormat("###,###,###");
-                String message = (_thuChi.getThu1Chi0() == true ? "THU" : "CHI") + strHDID + "\nNgày: " + sdf.format(_thuChi.getNgay()) + "\n" +
-                        "Số Tiền : " + formatter.format(_thuChi.getSoTien()) + "\nGhi Chú: " +
+                String message = (_thuChi.getThu1Chi0() == true ? "THU" : "CHI") + strHDID + "\nNgày: " + frmDateddMMyy.format(_thuChi.getNgay()) + "\n" +
+                        "Số Tiền : " + tienformatter.format(_thuChi.getSoTien()) + "\nGhi Chú: " +
                         _thuChi.getGhiChu();
                 builder.setMessage(message);
                 builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
@@ -188,15 +204,14 @@ public class ThuChiActivity extends AppCompatActivity {
         _btnSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy");
                 try {
-                    dateTuNgay = sdf.parse(_tuNgay.getText().toString());
+                    dateTuNgay = frmDateddMMyy.parse(_tuNgay.getText().toString());
                 } catch (ParseException e) {
                     Toast.makeText(ThuChiActivity.this, "Ngày Chưa Đúng.", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 try {
-                    dateDenNgay = sdf.parse(_denNgay.getText().toString());
+                    dateDenNgay = frmDateddMMyy.parse(_denNgay.getText().toString());
                 } catch (ParseException e) {
                     dateDenNgay = new Date();
                 }
@@ -204,6 +219,7 @@ public class ThuChiActivity extends AppCompatActivity {
                 //xóa danh sách cũ
                 arayListThuChi.clear();
                 arayListThuChi = thuChiDAO.getArayThuChi(dateTuNgay, dateDenNgay);
+                _lblTienTrongNha.setText(arayListThuChi.get(0).getTienTrongNha().toString());
                 HienThiTongThuChiTheoList(arayListThuChi);
                 //cập nhật lại ListView
                 adapterThuChi.notifyDataSetChanged();
@@ -217,29 +233,40 @@ public class ThuChiActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 _thuChi = new ThuChi();
-                if (_cbThuChi.isChecked()) {
-                    _thuChi.setThu1Chi0(true);
-                } else _thuChi.setThu1Chi0(false);
-
                 String textSL = _soTien.getText().toString();
                 if (textSL.length() == 0 || Integer.parseInt(textSL) == 0) {
                     Toast.makeText(ThuChiActivity.this, "Số Tiền Phải > 0 ", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                SimpleDateFormat frmDateThuChi = new SimpleDateFormat("dd/MM/yy");
+                if (_ghiChu.length() == 0 || _ghiChu.getText().toString().trim().equals("")) {
+                    Toast.makeText(ThuChiActivity.this, "Nhập Ghi Chú.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                int soTien = Integer.parseInt(textSL);
+                double tienTrongNha = Double.parseDouble(_lblTienTrongNha.getText().toString());
+                if (_cbThuChi.isChecked()) {
+                    _thuChi.setThu1Chi0(true);
+                    tienTrongNha += soTien;
+                } else {
+                    _thuChi.setThu1Chi0(false);
+                    tienTrongNha -= soTien;
+                }
+
+
                 Date dateNgayNhap;
                 try {
-                    dateNgayNhap = frmDateThuChi.parse(_ngayNhap.getText().toString());
+                    dateNgayNhap = frmDateddMMyy.parse(_ngayNhap.getText().toString());
                 } catch (ParseException e) {
                     dateNgayNhap = new Date();
                 }
+                String strGhiChu = _ghiChu.getText().toString().trim();
                 _thuChi.setMaHD("");
-                _thuChi.setSoTien(Integer.parseInt(textSL));
+                _thuChi.setSoTien(soTien);
                 _thuChi.setNgay(dateNgayNhap);
-                _thuChi.setGhiChu(VietHoaChuCaiDau(_ghiChu.getText().toString().trim()));
+                _thuChi.setGhiChu(VietHoaChuCaiDau(strGhiChu));
+                _thuChi.setTienTrongNha(tienTrongNha >= 0 ? tienTrongNha : 0);
                 thuChiDAO.ThemThuChiVaoDatabase(_thuChi);
                 Toast.makeText(ThuChiActivity.this, "Đã Thêm.", Toast.LENGTH_SHORT).show();
-
                 //xóa danh sách cũ
                 arayListThuChi.clear();
                 arayListThuChi = thuChiDAO.getArayThuChi();
@@ -248,6 +275,7 @@ public class ThuChiActivity extends AppCompatActivity {
                 adapterThuChi.notifyDataSetChanged();
                 _soTien.setText("");
                 _ghiChu.setText("");
+                _lblTienTrongNha.setText(tienTrongNha >= 0 ? tienTrongNha + "" : 0 + "");
             }
         });
 
@@ -284,6 +312,41 @@ public class ThuChiActivity extends AppCompatActivity {
             }
         });
 
+
+        _lblTienTrongNha.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                AlertDialog.Builder alert = new AlertDialog.Builder(ThuChiActivity.this);
+                final EditText edittext = new EditText(ThuChiActivity.this);
+                edittext.setInputType(InputType.TYPE_CLASS_NUMBER);
+                alert.setMessage("Nhập Số Tiền.");
+                alert.setTitle("Chỉnh Sửa Số Tiền Có");
+
+                alert.setView(edittext);
+
+                alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        if (edittext.getText().length() == 0)
+                            return;
+                        _lblTienTrongNha.setText(edittext.getText().toString());
+                        ThuChi thu_Chi = thuChiDAO.LayThuChiMoiNhat();
+                        thu_Chi.setTienTrongNha(Double.parseDouble(edittext.getText().toString()));
+                        thuChiDAO.UpdateThuChiTrongDatabase(thu_Chi);
+                    }
+                });
+
+                alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        // what ever you want to do with No option.
+                        return;
+                    }
+                });
+                alert.show();
+
+                return true;
+            }
+        });
+
     }
 
     String VietHoaChuCaiDau(String name) {
@@ -312,42 +375,40 @@ public class ThuChiActivity extends AppCompatActivity {
     };
 
     private void updateTextDate(Boolean _blDate) {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy");
         Date date = new Date();
-        if (blngayNhap){
-            _ngayNhap.setText(sdf.format(myCalendar.getTime()));
+        if (blngayNhap) {
+            _ngayNhap.setText(frmDateddMMyy.format(myCalendar.getTime()));
             blngayNhap = false;
-        }else
-        if (_blDate) {
+        } else if (_blDate) {
             if (myCalendar.getTime().after(date)) {
                 Toast.makeText(ThuChiActivity.this, "Không Lớn Hơn Ngày Hiện Tại", Toast.LENGTH_LONG).show();
                 return;
             }
             dateTuNgay = myCalendar.getTime();
-            _tuNgay.setText(sdf.format(dateTuNgay)); // Đưa ngay đã chọn lên text
+            _tuNgay.setText(frmDateddMMyy.format(dateTuNgay)); // Đưa ngay đã chọn lên text
             try {
-                dateDenNgay = sdf.parse(_denNgay.getText().toString());
+                dateDenNgay = frmDateddMMyy.parse(_denNgay.getText().toString());
             } catch (ParseException e) {
                 return;
             }
             if (dateDenNgay.before(dateTuNgay))
-                _denNgay.setText(sdf.format(dateTuNgay));
+                _denNgay.setText(frmDateddMMyy.format(dateTuNgay));
         } else {
             Date dateTuNgay = new Date();
             try {
-                dateTuNgay = sdf.parse(_tuNgay.getText().toString());
+                dateTuNgay = frmDateddMMyy.parse(_tuNgay.getText().toString());
             } catch (ParseException e) {
                 e.printStackTrace();
             }
             if (myCalendar.getTime().before(dateTuNgay)) {
                 Toast.makeText(ThuChiActivity.this, "Phải Lớn Hơn Ngày Bắt Đầu Xem", Toast.LENGTH_LONG).show();
-                _denNgay.setText(sdf.format(dateTuNgay));
+                _denNgay.setText(frmDateddMMyy.format(dateTuNgay));
                 return;
             }
             if (myCalendar.getTime().after(date)) {
                 myCalendar.setTime(date);
             }
-            _denNgay.setText(sdf.format(myCalendar.getTime()));
+            _denNgay.setText(frmDateddMMyy.format(myCalendar.getTime()));
         }
     }
 

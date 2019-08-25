@@ -49,6 +49,7 @@ public class HoaDonXuatDAO {
 
     public ArrayList<HoaDonXuat> arrHoaDonXuat() {
         try {
+            OpenCONN();
             String sqlSelect = "SELECT TOP 100 * FROM  tblHoaDonXuat ORDER BY NgayXuat DESC, MaHD DESC";
             PreparedStatement pre = _con.prepareStatement(sqlSelect);
             _rs = pre.executeQuery();
@@ -61,6 +62,7 @@ public class HoaDonXuatDAO {
                 _hoaDonXuat.setMaKH(_rs.getString("MaKH"));
                 _hoaDonXuat.setTongTienGoc(_rs.getDouble("TongTienGoc"));
                 arrHoaDonXuat.add(_hoaDonXuat);
+                CloseCONN();
             }
         } catch (Exception ex) {
             _ex = "Exceptions";
@@ -72,6 +74,7 @@ public class HoaDonXuatDAO {
         String MaHD = "";
         int maSo = 1;
         String selectMaHoaDon = "SELECT MaHD FROM tblHoaDonXuat";
+        OpenCONN();
         try {
             statement = _con.prepareStatement(selectMaHoaDon);
             _rs = statement.executeQuery();
@@ -89,7 +92,7 @@ public class HoaDonXuatDAO {
                 }
                 MaHD = DayMonthYear + (new DecimalFormat("#000")).format(maSo);
             }
-
+            CloseCONN();
         } catch (Exception ex) {
             _ex = "Exceptions";
         }
@@ -99,6 +102,7 @@ public class HoaDonXuatDAO {
     public void XoaAllHoaDonXuatNull() {
         String sqlQuery = "SELECT MaHD FROM tblHoaDonXuat WHERE NOT EXISTS (SELECT MaHD FROM tblChiTietHDX WHERE " +
                 "tblHoaDonXuat.MaHD = tblChiTietHDX.MaHD)";  // Có Trong Hóa Đơn Mà Không Có Chi Tiết. (HĐ Ảo)
+        OpenCONN();
         try {
             statement = _con.prepareStatement(sqlQuery);
             _rs = statement.executeQuery();
@@ -109,6 +113,7 @@ public class HoaDonXuatDAO {
                 statement.executeUpdate();
                 XoaFilePDFTheoMaHD(strMaHD);
             }
+            CloseCONN();
         } catch (SQLException _ex) {
             _ex.printStackTrace();
         }
@@ -117,6 +122,7 @@ public class HoaDonXuatDAO {
     public double LayTongTienGocCuaHD(ArrayList<MatHang> listMH) {
         double tongTienGoc = 0;
         String sqlSelect = "";
+        OpenCONN();
         try {
             for (MatHang mh : listMH) {
                 sqlSelect = "SELECT (DonGia*" + mh.getSoLuong() + ")AS TongGoc FROM tblMatHang WHERE MaMatH = N'" + mh.getMaMatH() + "'";
@@ -126,6 +132,7 @@ public class HoaDonXuatDAO {
                     tongTienGoc = tongTienGoc + _rs.getDouble("TongGoc");
                 }
             }
+            CloseCONN();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -136,9 +143,11 @@ public class HoaDonXuatDAO {
         SimpleDateFormat frmDate = new SimpleDateFormat("MM/dd/yyyy");
         String ngayBan = frmDate.format(new Date()); // Ngày Hiện Tại
         String insertHDX = "insert into tblHoaDonXuat(MaHD,MaNhanVien,NgayXuat,MaKH) values(N'" + hdx.getMaHD() + "',N'" + hdx.getMaNhanVien() + "',N'" + ngayBan + "',N'" + hdx.getMaKH() + "')";
+        OpenCONN();
         try {
             statement = _con.prepareStatement(insertHDX);
             statement.executeUpdate();
+            CloseCONN();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -146,15 +155,18 @@ public class HoaDonXuatDAO {
 
     public void UpdateTTHoaDonXuat(HoaDonXuat hdx) {
         String updateSQL = "UPDATE tblHoaDonXuat SET TongTienGoc ='" + hdx.getTongTienGoc() + "' , TongTien = '" + hdx.getTongTien() + "' , MaKH = '" + hdx.getMaKH() + "' WHERE MaHD='" + hdx.getMaHD() + "'";
+        OpenCONN();
         try {
             statement = _con.prepareStatement(updateSQL);
             statement.executeUpdate();
+            CloseCONN();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public boolean InsertDuLieuMuaDB(ArrayList<MatHang> arayListView, HoaDonXuat hdx, KhachHang kh) {
+        OpenCONN();
         try {
             String query_SQL = "";
             for (MatHang mh : arayListView) {
@@ -168,6 +180,7 @@ public class HoaDonXuatDAO {
                 statement = _con.prepareStatement(query_SQL);
                 statement.executeUpdate();
             }
+            CloseCONN();
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -234,14 +247,19 @@ public class HoaDonXuatDAO {
     }
 
     public boolean KiemTraTonTaiTrongChiTietHoaDon(String strMaHD) {
+        OpenCONN();
         try {
             String sqlSelect = "SELECT MaHD FROM tblChiTietHDX WHERE MaHD ='" + strMaHD + "'";
             statement = _con.prepareStatement(sqlSelect);
             _rs = statement.executeQuery();
-            if (!_rs.next())
+            if (!_rs.next()) {
+                CloseCONN();
                 return false;
-            else
+            }else {
+                CloseCONN();
                 return true;
+
+            }
         } catch (SQLException _ex) {
             _ex.printStackTrace();
             return false;
@@ -249,14 +267,18 @@ public class HoaDonXuatDAO {
     }
 
     public boolean KiemTraTonTaiGiaBan(String strMaKH, String strMaMH) {
+        OpenCONN();
         try {
             String sqlSelect = "SELECT MaMatH FROM tblGiaBan WHERE MaMatH ='" + strMaMH + "' AND MaKH = '" + strMaKH + "'";
             statement = _con.prepareStatement(sqlSelect);
             _rs = statement.executeQuery();
             if (!_rs.isBeforeFirst()) {
+                CloseCONN();
                 return false;
-            } else
+            } else{
+                CloseCONN();
                 return true;
+            }
         } catch (SQLException _ex) {
             _ex.printStackTrace();
             return false;
@@ -266,12 +288,14 @@ public class HoaDonXuatDAO {
     public String LayMaHoaDonMoiNhat() {
         String query_SQL = "SELECT TOP 1 MaHD FROM tblHoaDonXuat ORDER BY NgayXuat DESC,MaHD DESC";
         String strMaHD = "";
+        OpenCONN();
         try {
             statement = _con.prepareStatement(query_SQL);
             _rs = statement.executeQuery();
             while (_rs.next()) {
                 strMaHD = _rs.getString("MaHD");
             }
+            CloseCONN();
         } catch (SQLException _ex) {
             _ex.printStackTrace();
         }
@@ -328,9 +352,11 @@ public class HoaDonXuatDAO {
 
     public void XoaFilePDFTheoMaHD(String strMaHD){
         String deletePDF = "DELETE FROM SavePDFTable WHERE MaHD ='" + strMaHD + "'";
+        OpenCONN();
         try {
             statement = _con.prepareStatement(deletePDF);
             statement.executeQuery();
+            CloseCONN();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -338,6 +364,7 @@ public class HoaDonXuatDAO {
     }
 
     public void XemLaiHoaDonTheoMaHD(String filePathHoaDon) {
+        OpenCONN();
         try {
             File pdfFile = new File(filePathHoaDon);
             String strMaHD = layTenFileKhongMoRong(pdfFile.getName());
@@ -352,6 +379,7 @@ public class HoaDonXuatDAO {
                 fos.write(_rs.getBytes("PDFFile"));
                 fos.close();
             }
+            CloseCONN();
         } catch (SQLException e) {
             e.printStackTrace();
         } catch (FileNotFoundException e) {

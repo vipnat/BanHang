@@ -47,6 +47,7 @@ public class ThuChiDAO {
                 _thuChi.setSoTien(_rs.getInt("SoTien"));
                 _thuChi.setGhiChu(_rs.getString("GhiChu"));
                 _thuChi.setThu1Chi0(_rs.getInt("Thu1Chi0") == 1 ? true : false);
+                _thuChi.setTienTrongNha(_rs.getDouble("TienTrongNha"));
                 arayThuChi.add(_thuChi);
             }
             CloseCONN();
@@ -71,6 +72,7 @@ public class ThuChiDAO {
                 _thuChi.setSoTien(_rs.getInt("SoTien"));
                 _thuChi.setGhiChu(_rs.getString("GhiChu"));
                 _thuChi.setThu1Chi0(_rs.getInt("Thu1Chi0") == 1 ? true : false);
+                _thuChi.setTienTrongNha(_rs.getDouble("TienTrongNha"));
                 arayThuChi.add(_thuChi);
             }
             CloseCONN();
@@ -83,7 +85,8 @@ public class ThuChiDAO {
     public void ThemThuChiVaoDatabase(ThuChi thuChi) {
         SimpleDateFormat frmDate = new SimpleDateFormat("MM/dd/yyyy");
         OpenCONN();
-        String strInsert = "INSERT INTO [dbo].[tblThuChi] ([MaHD] ,[Ngay] ,[SoTien] ,[GhiChu] ,[Thu1Chi0]) VALUES (N'" + thuChi.getMaHD() + "',N'" + frmDate.format(thuChi.getNgay()) + "',N'" + thuChi.getSoTien() + "',N'" + (thuChi.getGhiChu() == "" ?  frmDate.format(thuChi.getNgay()) : thuChi.getGhiChu()) + "',N'" + (thuChi.getThu1Chi0() == true ? 1 : 0) + "')";
+        String strInsert = "INSERT INTO [dbo].[tblThuChi] ([MaHD] ,[Ngay] ,[SoTien] ,[GhiChu] ,[Thu1Chi0],[TienTrongNha]) " +
+                "VALUES (N'" + thuChi.getMaHD() + "',N'" + frmDate.format(thuChi.getNgay()) + "',N'" + thuChi.getSoTien() + "',N'" + (thuChi.getGhiChu() == "" ? frmDate.format(thuChi.getNgay()) : thuChi.getGhiChu()) + "',N'" + (thuChi.getThu1Chi0() == true ? 1 : 0) + "','" + thuChi.getTienTrongNha() + "')";
         try {
             statement = _con.prepareStatement(strInsert);
             statement.executeUpdate();
@@ -105,6 +108,58 @@ public class ThuChiDAO {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public void UpdateThuChiTrongDatabase(ThuChi thuChi) {
+        OpenCONN();
+        String strUpdate = "UPDATE [dbo].[tblThuChi] SET [TienTrongNha] = '" + thuChi.getTienTrongNha() + "' WHERE Id = '" + thuChi.getId() + "'";
+        try {
+            statement = _con.prepareStatement(strUpdate);
+            statement.executeUpdate();
+            CloseCONN();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public ThuChi LayThuChiMoiNhat() {
+        try {
+            OpenCONN();
+            String sqlSelect = "SELECT TOP(1)* FROM  tblThuChi ORDER BY Ngay DESC,Id DESC";
+            PreparedStatement pre = _con.prepareStatement(sqlSelect);
+            _rs = pre.executeQuery();
+            while (_rs.next()) {
+                _thuChi = new ThuChi();
+                _thuChi.setId(_rs.getInt("Id"));
+                _thuChi.setMaHD(_rs.getString("MaHD"));
+                _thuChi.setNgay(_rs.getDate("Ngay"));
+                _thuChi.setSoTien(_rs.getInt("SoTien"));
+                _thuChi.setGhiChu(_rs.getString("GhiChu"));
+                _thuChi.setThu1Chi0(_rs.getInt("Thu1Chi0") == 1 ? true : false);
+                _thuChi.setTienTrongNha(_rs.getDouble("TienTrongNha"));
+            }
+            CloseCONN();
+        } catch (Exception ex) {
+            _ex = "Exceptions";
+        }
+        return _thuChi;
+    }
+
+    public Double LayTongTienMoiNhat() {
+        Double tienTong = null;
+        try {
+            OpenCONN();
+            String sqlSelect = "SELECT TOP(1)* FROM  tblThuChi ORDER BY Ngay DESC,Id DESC";
+            PreparedStatement pre = _con.prepareStatement(sqlSelect);
+            _rs = pre.executeQuery();
+            while (_rs.next()) {
+                tienTong = _rs.getDouble("TienTrongNha");
+            }
+            CloseCONN();
+        } catch (Exception ex) {
+            tienTong = 0.0;
+        }
+        return tienTong;
     }
 
 }

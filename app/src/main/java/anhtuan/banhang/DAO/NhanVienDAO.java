@@ -20,10 +20,11 @@ public class NhanVienDAO {
     NhanVien nhanVien;
 
     public ArrayList<NhanVien> getArrNhanVien() {
+        _con = connectionDB.CONN();
         try {
-            //String sqlSelect = "SELECT * FROM tblNhanVien ORDER BY MaNhanVien DESC";
-            String sqlSelect = "SELECT * FROM tblNhanVien";
-            PreparedStatement statement = _con.prepareStatement(sqlSelect);
+            String sqlSelect = "SELECT * FROM tblNhanVien ORDER BY MaNhanVien DESC";
+            String sqlSelect1 = "SELECT * FROM tblNhanVien";
+            PreparedStatement statement = _con.prepareStatement(sqlSelect1);
             _rs = statement.executeQuery();
             arrNhanVien.clear();
             while (_rs.next()) {
@@ -34,6 +35,7 @@ public class NhanVienDAO {
                 nhanVien.setDienThoai(_rs.getString("DienThoai"));
                 arrNhanVien.add(nhanVien);
             }
+            _con.close();
         } catch (Exception ex) {
             _ex = "Exceptions";
         }
@@ -42,6 +44,7 @@ public class NhanVienDAO {
 
     public NhanVien LayThongTinNhanVienTheoMa(String maNV) {
         String sqlSelect = "SELECT * FROM tblNhanVien Where MaNhanVien ='" + maNV + "'";
+        _con = connectionDB.CONN();
         try {
             PreparedStatement statement = _con.prepareStatement(sqlSelect);
             _rs = statement.executeQuery();
@@ -52,6 +55,7 @@ public class NhanVienDAO {
                 nhanVien.setDiaChi(_rs.getString("DiaChi"));
                 nhanVien.setDienThoai(_rs.getString("DienThoai"));
             }
+            _con.close();
         } catch (SQLException _ex) {
             _ex.printStackTrace();
         }

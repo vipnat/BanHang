@@ -8,7 +8,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="ThuChi"
+        android:text="Thu"
         android:textSize="20sp" />
 
     <TextView
@@ -24,7 +24,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="Số Tiên"
+        android:text="Số Tiền"
+        android:textColor="@color/colorAccent"
         android:textSize="20sp" />
 
     <TextView

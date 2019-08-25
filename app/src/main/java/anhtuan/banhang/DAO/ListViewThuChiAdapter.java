@@ -47,7 +47,7 @@ public class ListViewThuChiAdapter extends ArrayAdapter {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM");
         txtNgay.setText(sdf.format(thuChi.getNgay()));
         txtSoTien.setText(thuChi.getSoTien()+"");
-        txtGhiChu.setText(thuChi.getMaHD().equals("")? "Id: "+thuChi.getId():thuChi.getMaHD());
+        txtGhiChu.setText(thuChi.getGhiChu());
         return convertView;//trả về 1 view khi đã thiết đặt xong
     }
 }

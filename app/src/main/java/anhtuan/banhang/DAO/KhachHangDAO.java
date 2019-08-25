@@ -19,6 +19,7 @@ public class KhachHangDAO {
     KhachHang _khachHang;
 
     public ArrayList<KhachHang> getArrKhachHang() {
+        _con = connectionDB.CONN();
         try {
             String sqlSelect = "SELECT * FROM tblKhachHang";
             PreparedStatement pre = _con.prepareStatement(sqlSelect);
@@ -32,6 +33,7 @@ public class KhachHangDAO {
                 _khachHang.setNoCu(_rs.getString("NoCu"));
                 arrKhachHang.add(_khachHang);
             }
+            _con.close();
         } catch (Exception ex) {
             _ex = "Exceptions";
         }
@@ -39,6 +41,7 @@ public class KhachHangDAO {
     }
 
     public KhachHang LayKhachHangTheoMaKH(String strId) {
+        _con = connectionDB.CONN();
         try {
             String sqlSelect = "SELECT * FROM tblKhachHang WHERE MaKH = '" + strId + "'";
             PreparedStatement pre = _con.prepareStatement(sqlSelect);
@@ -53,6 +56,7 @@ public class KhachHangDAO {
                 _khachHang.setNoCu(_rs.getString("NoCu"));
 
             }
+            _con.close();
         } catch (Exception ex) {
             _ex = "Exceptions";
         }

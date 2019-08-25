@@ -128,7 +128,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
     NhanVienDAO _nhanVienDAO = new NhanVienDAO();
     HoaDonXuatDAO hoaDonXuatDAO = new HoaDonXuatDAO();
     HoaDonXuat hoaDonXuat = new HoaDonXuat();
-
+    ThuChiDAO thuChiDAO = new ThuChiDAO();
 
     DanhSachMatHang dsMatHang = new DanhSachMatHang();
     int intSelectSpinMHPosition = 0;
@@ -557,14 +557,16 @@ public class XuatHoaDonActivity extends AppCompatActivity {
     }
 
     private void ThemThuChiVaoDatabase() {
+        int tienTra = Integer.parseInt(_txtTraTien.getText().toString());
+        double tienTrongNhaMoiNhat = thuChiDAO.LayTongTienMoiNhat();
         // Tạo Thu Chi
         ThuChi thuChi = new ThuChi();
         thuChi.setNgay(hoaDonXuat.getNgayXuat());
         thuChi.setMaHD(strMaHoaDon);
         thuChi.setGhiChu(_khachHang.getTenKH());
-        thuChi.setSoTien( Integer.parseInt(_txtTraTien.getText().toString()));
+        thuChi.setSoTien(tienTra);
         thuChi.setThu1Chi0(true);
-        ThuChiDAO thuChiDAO = new ThuChiDAO();
+        thuChi.setTienTrongNha(tienTrongNhaMoiNhat + tienTra);
         thuChiDAO.ThemThuChiVaoDatabase(thuChi);
     }
 
