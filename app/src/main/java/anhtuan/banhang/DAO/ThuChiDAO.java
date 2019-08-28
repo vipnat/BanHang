@@ -145,7 +145,7 @@ public class ThuChiDAO {
         return _thuChi;
     }
 
-    public Double LayTongTienMoiNhat() {
+    public Double LayTienTrongNhaMoiNhat() {
         Double tienTong = null;
         try {
             OpenCONN();

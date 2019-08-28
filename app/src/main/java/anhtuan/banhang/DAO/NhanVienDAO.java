@@ -19,12 +19,13 @@ public class NhanVienDAO {
     ArrayList<NhanVien> arrNhanVien = new ArrayList<NhanVien>();
     NhanVien nhanVien;
 
-    public ArrayList<NhanVien> getArrNhanVien() {
+    public ArrayList<NhanVien> getArrNhanVien(String mayCua) {
         _con = connectionDB.CONN();
         try {
             String sqlSelect = "SELECT * FROM tblNhanVien ORDER BY MaNhanVien DESC";
-            String sqlSelect1 = "SELECT * FROM tblNhanVien";
-            PreparedStatement statement = _con.prepareStatement(sqlSelect1);
+            if (mayCua.equals("trang"))
+                sqlSelect = "SELECT * FROM tblNhanVien";
+            PreparedStatement statement = _con.prepareStatement(sqlSelect);
             _rs = statement.executeQuery();
             arrNhanVien.clear();
             while (_rs.next()) {

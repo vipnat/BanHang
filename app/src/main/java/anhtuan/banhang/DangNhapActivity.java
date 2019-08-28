@@ -5,6 +5,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -104,8 +105,13 @@ public class DangNhapActivity extends AppCompatActivity {
         hoaDonXuatDAO.XoaAllHoaDonXuatNull();
 
         _spinNhanVien = (Spinner) findViewById(R.id.spnNhanVien);
+
+        String mayCua = "trang";
+        int chieuRong = getScreenWidth();
+        if (chieuRong == 1080 || chieuRong == 720)
+            mayCua = "tuan";
         // Cấu Hình Cho Spiner Khách Hàng
-        arrayNhanVien = _nhanVienDao.getArrNhanVien();
+        arrayNhanVien = _nhanVienDao.getArrNhanVien(mayCua);
         adapterNhanVien = new ArrayAdapter<NhanVien>(this, android.R.layout.simple_spinner_item, arrayNhanVien);
         adapterNhanVien.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         _spinNhanVien.setAdapter(adapterNhanVien);
@@ -200,6 +206,15 @@ public class DangNhapActivity extends AppCompatActivity {
                                       }
         );
     }
+
+    public static int getScreenWidth() {
+        return Resources.getSystem().getDisplayMetrics().widthPixels;
+    }
+
+    public static int getScreenHeight() {
+        return Resources.getSystem().getDisplayMetrics().heightPixels;
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK && requestCode == 123) {

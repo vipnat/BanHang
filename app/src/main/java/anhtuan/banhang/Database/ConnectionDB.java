@@ -17,7 +17,7 @@ import java.util.Enumeration;
  */
 
 public class ConnectionDB {
-    String ip = "192.168.1.27";
+    String ip = "192.168.1.27";//171.247.194.72
     String classs = "net.sourceforge.jtds.jdbc.Driver";
     //String db = "BanHangTest";
     String db = "BanHang";

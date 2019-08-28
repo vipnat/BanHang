@@ -97,6 +97,8 @@ public class ThuChiActivity extends AppCompatActivity {
 
         Date date = new Date();
         _ngayNhap.setText(frmDateddMMyy.format(date));
+
+        _lblTienTrongNha.setText(tienformatter.format(thuChiDAO.LayTienTrongNhaMoiNhat()*1000));
     }
 
     public void showDialog() throws Exception {
@@ -105,7 +107,7 @@ public class ThuChiActivity extends AppCompatActivity {
         builder.setMessage("Bạn Có Muốn Xóa Thông Tin? " + "Id:" + _thuChi.getId() + "\nGhi Chú:" + _thuChi.getGhiChu());
         builder.setPositiveButton("Có", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                double tienTrongNhaMoiNhat = thuChiDAO.LayTongTienMoiNhat();
+                double tienTrongNhaMoiNhat = thuChiDAO.LayTienTrongNhaMoiNhat();
                 double soTienXoaDi = _thuChi.getSoTien();
                 thuChiDAO.XoaThuChiTrongDatabase(_thuChi);
                 ThuChi thu_Chi = thuChiDAO.LayThuChiMoiNhat();
@@ -116,7 +118,7 @@ public class ThuChiActivity extends AppCompatActivity {
 
                 // Cập nhập lại
                 thuChiDAO.UpdateThuChiTrongDatabase(thu_Chi);
-                _lblTienTrongNha.setText(tienformatter.format(thu_Chi.getTienTrongNha()));
+                _lblTienTrongNha.setText(tienformatter.format(thu_Chi.getTienTrongNha()*1000));
 
                 //xóa danh sách cũ
                 arayListThuChi.clear();
@@ -219,7 +221,7 @@ public class ThuChiActivity extends AppCompatActivity {
                 //xóa danh sách cũ
                 arayListThuChi.clear();
                 arayListThuChi = thuChiDAO.getArayThuChi(dateTuNgay, dateDenNgay);
-                _lblTienTrongNha.setText(arayListThuChi.get(0).getTienTrongNha().toString());
+                _lblTienTrongNha.setText(tienformatter.format(arayListThuChi.get(0).getTienTrongNha()*1000));
                 HienThiTongThuChiTheoList(arayListThuChi);
                 //cập nhật lại ListView
                 adapterThuChi.notifyDataSetChanged();
@@ -243,7 +245,7 @@ public class ThuChiActivity extends AppCompatActivity {
                     return;
                 }
                 int soTien = Integer.parseInt(textSL);
-                double tienTrongNha = Double.parseDouble(_lblTienTrongNha.getText().toString());
+                double tienTrongNha = thuChiDAO.LayTienTrongNhaMoiNhat();
                 if (_cbThuChi.isChecked()) {
                     _thuChi.setThu1Chi0(true);
                     tienTrongNha += soTien;
@@ -275,7 +277,7 @@ public class ThuChiActivity extends AppCompatActivity {
                 adapterThuChi.notifyDataSetChanged();
                 _soTien.setText("");
                 _ghiChu.setText("");
-                _lblTienTrongNha.setText(tienTrongNha >= 0 ? tienTrongNha + "" : 0 + "");
+                _lblTienTrongNha.setText(tienTrongNha >= 0 ? tienformatter.format(tienTrongNha*1000) + "" : 0 + "");
             }
         });
 
@@ -328,7 +330,7 @@ public class ThuChiActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         if (edittext.getText().length() == 0)
                             return;
-                        _lblTienTrongNha.setText(edittext.getText().toString());
+                        _lblTienTrongNha.setText(tienformatter.format(edittext.getText()));
                         ThuChi thu_Chi = thuChiDAO.LayThuChiMoiNhat();
                         thu_Chi.setTienTrongNha(Double.parseDouble(edittext.getText().toString()));
                         thuChiDAO.UpdateThuChiTrongDatabase(thu_Chi);

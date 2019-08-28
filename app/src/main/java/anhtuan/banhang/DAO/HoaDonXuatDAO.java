@@ -62,8 +62,8 @@ public class HoaDonXuatDAO {
                 _hoaDonXuat.setMaKH(_rs.getString("MaKH"));
                 _hoaDonXuat.setTongTienGoc(_rs.getDouble("TongTienGoc"));
                 arrHoaDonXuat.add(_hoaDonXuat);
-                CloseCONN();
             }
+            CloseCONN();
         } catch (Exception ex) {
             _ex = "Exceptions";
         }

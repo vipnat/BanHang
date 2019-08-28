@@ -558,7 +558,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
 
     private void ThemThuChiVaoDatabase() {
         int tienTra = Integer.parseInt(_txtTraTien.getText().toString());
-        double tienTrongNhaMoiNhat = thuChiDAO.LayTongTienMoiNhat();
+        double tienTrongNhaMoiNhat = thuChiDAO.LayTienTrongNhaMoiNhat();
         // Tạo Thu Chi
         ThuChi thuChi = new ThuChi();
         thuChi.setNgay(hoaDonXuat.getNgayXuat());
