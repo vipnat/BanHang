@@ -71,6 +71,7 @@ public class ThuChiActivity extends AppCompatActivity {
         setContentView(R.layout.activity_thu_chi);
         getControl();
         addEventForm();
+        thuChiDAO.UpdateTienTheoThuChi();
     }
 
     private void getControl() {

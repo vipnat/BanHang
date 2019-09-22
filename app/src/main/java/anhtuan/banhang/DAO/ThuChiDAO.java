@@ -125,7 +125,7 @@ public class ThuChiDAO {
     public ThuChi LayThuChiMoiNhat() {
         try {
             OpenCONN();
-            String sqlSelect = "SELECT TOP(1)* FROM  tblThuChi ORDER BY Ngay DESC,Id DESC";
+            String sqlSelect = "SELECT TOP(1)* FROM  tblThuChi ORDER BY Id DESC";
             PreparedStatement pre = _con.prepareStatement(sqlSelect);
             _rs = pre.executeQuery();
             while (_rs.next()) {
@@ -149,7 +149,7 @@ public class ThuChiDAO {
         Double tienTong = null;
         try {
             OpenCONN();
-            String sqlSelect = "SELECT TOP(1)* FROM  tblThuChi ORDER BY Ngay DESC,Id DESC";
+            String sqlSelect = "SELECT TOP(1)* FROM  tblThuChi ORDER BY Id DESC";
             PreparedStatement pre = _con.prepareStatement(sqlSelect);
             _rs = pre.executeQuery();
             while (_rs.next()) {
@@ -160,6 +160,43 @@ public class ThuChiDAO {
             tienTong = 0.0;
         }
         return tienTong;
+    }
+
+    public void UpdateTienTheoThuChi(){
+        try {
+            OpenCONN();
+            String sqlSelect = "SELECT * FROM  tblThuChi ORDER BY Id";
+            PreparedStatement pre = _con.prepareStatement(sqlSelect);
+            _rs = pre.executeQuery();
+            int dem = 0;
+            int sotien = 0;
+            double tientong = 166125;
+            while (_rs.next()) {
+                dem = 1;
+                _thuChi = new ThuChi();
+                _thuChi.setId(_rs.getInt("Id"));
+                _thuChi.setMaHD(_rs.getString("MaHD"));
+                _thuChi.setNgay(_rs.getDate("Ngay"));
+                _thuChi.setSoTien(_rs.getInt("SoTien"));
+                _thuChi.setGhiChu(_rs.getString("GhiChu"));
+                _thuChi.setThu1Chi0(_rs.getInt("Thu1Chi0") == 1 ? true : false);
+                _thuChi.setTienTrongNha(_rs.getDouble("TienTrongNha"));
+                if (_thuChi.getId() > 1116){
+                    sotien = _thuChi.getSoTien();
+                    tientong = (_thuChi.getThu1Chi0() ? tientong + sotien : tientong - sotien);
+                    String strUpdate = "UPDATE [dbo].[tblThuChi] SET [TienTrongNha] = '" + tientong + "' WHERE Id = '" + _thuChi.getId() + "'";
+                    try {
+                        statement = _con.prepareStatement(strUpdate);
+                        statement.executeUpdate();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            CloseCONN();
+        } catch (Exception ex) {
+            _ex = "Exceptions";
+        }
     }
 
 }
