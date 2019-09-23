@@ -162,17 +162,15 @@ public class ThuChiDAO {
         return tienTong;
     }
 
-    public void UpdateTienTheoThuChi(){
+    public void UpdateTienTheoThuChi() {
         try {
             OpenCONN();
             String sqlSelect = "SELECT * FROM  tblThuChi ORDER BY Id";
             PreparedStatement pre = _con.prepareStatement(sqlSelect);
             _rs = pre.executeQuery();
-            int dem = 0;
             int sotien = 0;
             double tientong = 166125;
             while (_rs.next()) {
-                dem = 1;
                 _thuChi = new ThuChi();
                 _thuChi.setId(_rs.getInt("Id"));
                 _thuChi.setMaHD(_rs.getString("MaHD"));
@@ -181,15 +179,18 @@ public class ThuChiDAO {
                 _thuChi.setGhiChu(_rs.getString("GhiChu"));
                 _thuChi.setThu1Chi0(_rs.getInt("Thu1Chi0") == 1 ? true : false);
                 _thuChi.setTienTrongNha(_rs.getDouble("TienTrongNha"));
-                if (_thuChi.getId() > 1116){
+
+                if (_thuChi.getId() > 1116) {
                     sotien = _thuChi.getSoTien();
                     tientong = (_thuChi.getThu1Chi0() ? tientong + sotien : tientong - sotien);
-                    String strUpdate = "UPDATE [dbo].[tblThuChi] SET [TienTrongNha] = '" + tientong + "' WHERE Id = '" + _thuChi.getId() + "'";
-                    try {
-                        statement = _con.prepareStatement(strUpdate);
-                        statement.executeUpdate();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
+                    if (tientong != _thuChi.getTienTrongNha()) {
+                        String strUpdate = "UPDATE [dbo].[tblThuChi] SET [TienTrongNha] = '" + tientong + "' WHERE Id = '" + _thuChi.getId() + "'";
+                        try {
+                            statement = _con.prepareStatement(strUpdate);
+                            statement.executeUpdate();
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
