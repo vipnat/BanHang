@@ -365,11 +365,12 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                 }
                 _matHang.setSoLuong(intSoLuongMua);
                 _matHang.setDonGia(fGiaban);
+                hoaDonXuatDAO.UpdateGiaBanTheoKhachHang(_khachHang, _matHang);
                 addMatHangForListView();
                 setThongTinKetQua();
                 if (arayListView.size() > 0) _spinKH.setEnabled(false);
                 // Upadate Giá Bán
-                hoaDonXuatDAO.UpdateGiaBanTheoKhachHang(_khachHang, _matHang);
+
 
                 TaoFilePDFA5Null();
                 Toast.makeText(XuatHoaDonActivity.this, "Đã Mua " + (int) (double) _matHang.getSoLuong() + " dây\n" + _matHang, Toast.LENGTH_LONG).show();

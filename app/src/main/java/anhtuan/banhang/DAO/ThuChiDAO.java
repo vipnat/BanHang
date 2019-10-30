@@ -19,7 +19,12 @@ public class ThuChiDAO {
     PreparedStatement statement;
 
     public void OpenCONN() {
-        _con = connectionDB.CONN();
+        try {
+            if (_con.isClosed())
+                _con = connectionDB.CONN();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public void CloseCONN() {
@@ -29,7 +34,6 @@ public class ThuChiDAO {
             e.printStackTrace();
         }
     }
-
     ArrayList<ThuChi> arayThuChi = new ArrayList<ThuChi>();
     ThuChi _thuChi;
 

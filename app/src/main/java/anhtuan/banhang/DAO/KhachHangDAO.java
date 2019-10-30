@@ -18,8 +18,25 @@ public class KhachHangDAO {
     ArrayList<KhachHang> arrKhachHang = new ArrayList<KhachHang>();
     KhachHang _khachHang;
 
+    public void OpenCONN() {
+        try {
+            if (_con.isClosed())
+                _con = connectionDB.CONN();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void CloseCONN() {
+        try {
+            _con.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public ArrayList<KhachHang> getArrKhachHang() {
-        _con = connectionDB.CONN();
+        OpenCONN();
         try {
             String sqlSelect = "SELECT * FROM tblKhachHang";
             PreparedStatement pre = _con.prepareStatement(sqlSelect);
@@ -33,7 +50,7 @@ public class KhachHangDAO {
                 _khachHang.setNoCu(_rs.getString("NoCu"));
                 arrKhachHang.add(_khachHang);
             }
-            _con.close();
+            CloseCONN();
         } catch (Exception ex) {
             _ex = "Exceptions";
         }
@@ -41,7 +58,7 @@ public class KhachHangDAO {
     }
 
     public KhachHang LayKhachHangTheoMaKH(String strId) {
-        _con = connectionDB.CONN();
+        OpenCONN();
         try {
             String sqlSelect = "SELECT * FROM tblKhachHang WHERE MaKH = '" + strId + "'";
             PreparedStatement pre = _con.prepareStatement(sqlSelect);
@@ -56,7 +73,7 @@ public class KhachHangDAO {
                 _khachHang.setNoCu(_rs.getString("NoCu"));
 
             }
-            _con.close();
+            CloseCONN();
         } catch (Exception ex) {
             _ex = "Exceptions";
         }
@@ -65,11 +82,11 @@ public class KhachHangDAO {
 
     public void CapNhapNoCuTheoKhachHang(KhachHang khachHang) {
         try {
-            _con = connectionDB.CONN();
+            OpenCONN();
             String sqlUpdate = "UPDATE tblKhachHang SET NoCu='" + khachHang.getNoCu() + "' WHERE MaKH='" + khachHang.getMaKH() + "'";
             PreparedStatement statement = _con.prepareStatement(sqlUpdate);
             statement.executeUpdate();
-            _con.close();
+            CloseCONN();
         } catch (SQLException _ex) {
             _ex.printStackTrace();
         }

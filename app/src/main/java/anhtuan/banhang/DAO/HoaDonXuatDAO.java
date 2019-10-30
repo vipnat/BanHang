@@ -33,7 +33,12 @@ public class HoaDonXuatDAO {
     PreparedStatement statement;
 
     public void OpenCONN() {
-        _con = connectionDB.CONN();
+        try {
+            if (_con.isClosed())
+            _con = connectionDB.CONN();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public void CloseCONN() {
@@ -171,7 +176,7 @@ public class HoaDonXuatDAO {
             String query_SQL = "";
             for (MatHang mh : arayListView) {
                 //Thêm vào bảng tblChiTietHDX
-                query_SQL = "insert into tblChiTietHDX(MaMatH,MaHD,SoLuong,DonGia) values(N'" + mh.getMaMatH() + "',N'" + hdx.getMaHD() + "'," + mh.getSoLuong() + "," + mh.getDonGia() + ")";
+                query_SQL = "INSERT INTO tblChiTietHDX(MaMatH,MaHD,SoLuong,DonGia) values(N'" + mh.getMaMatH() + "',N'" + hdx.getMaHD() + "'," + mh.getSoLuong() + "," + mh.getDonGia() + ")";
                 statement = _con.prepareStatement(query_SQL);
                 statement.executeUpdate();
 
@@ -179,6 +184,15 @@ public class HoaDonXuatDAO {
                 query_SQL = "update tblMatHang set SoLuong=SoLuong-" + mh.getSoLuong() + " where MaMatH=N'" + mh.getMaMatH() + "'";
                 statement = _con.prepareStatement(query_SQL);
                 statement.executeUpdate();
+
+               /* //Cập nhật lại giá bán theo khách
+                if (KiemTraTonTaiGiaBan(kh.getMaKH(), mh.getMaMatH()))
+                    query_SQL = "UPDATE [dbo].[tblGiaBan] SET [GiaBan] =" + mh.getDonGia() + " WHERE [MaMatH] ='" + mh.getMaMatH() + "' AND [MaKH] ='" + kh.getMaKH() + "'";
+                else
+                    query_SQL = "INSERT INTO [dbo].[tblGiaBan]([MaMatH],[MaKH],[GiaBan])VALUES(N'" + mh.getMaMatH() + "',N'" + kh.getMaKH() + "'," + mh.getDonGia() + ")";
+                statement = _con.prepareStatement(query_SQL);
+                statement.executeUpdate();
+                */
             }
             CloseCONN();
             return true;
@@ -192,18 +206,16 @@ public class HoaDonXuatDAO {
         String query_SQL = "";
         // Kiểm Tra Tồn Tại Giá Bán Của Khách Hàng
         try {
-            _con = connectionDB.CONN();
             if (!KiemTraTonTaiGiaBan(kh.getMaKH(), mh.getMaMatH())) {
                 query_SQL = "INSERT INTO tblGiaBan([MaMatH],[MaKH],[GiaBan]) VALUES (N'" + mh.getMaMatH() + "',N'" + kh.getMaKH() + "'," + mh.getDonGia() + ")";
-                statement = _con.prepareStatement(query_SQL);
-                statement.executeUpdate();
             } else {
                 //Cập nhập giá mới cho khách hàng
                 query_SQL = "update [tblGiaBan] set [GiaBan]=" + mh.getDonGia() + " where [MaKH]=N'" + kh.getMaKH() + "' and [MaMatH] =N'" + mh.getMaMatH() + "'";
-                statement = _con.prepareStatement(query_SQL);
-                statement.executeUpdate();
             }
-            _con.close();
+            OpenCONN();
+            statement = _con.prepareStatement(query_SQL);
+            statement.executeUpdate();
+            CloseCONN();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -211,11 +223,11 @@ public class HoaDonXuatDAO {
 
     public void UpdateSoLuongMatHang(Integer soluong, String maMH) {
         try {
-            _con = connectionDB.CONN();
+            OpenCONN();
             String sqlUpdate = "UPDATE tblMatHang SET SoLuong = " + soluong + " WHERE MaMatH = '" + maMH + "'";
             PreparedStatement statement = _con.prepareStatement(sqlUpdate);
             statement.executeUpdate();
-            _con.close();
+            CloseCONN();
         } catch (Exception ex) {
             _ex = "Exceptions";
         }
@@ -223,7 +235,7 @@ public class HoaDonXuatDAO {
 
     public void DeleteDuLieuMuaDB(String strMaHoaDon) {
         try {
-            _con = connectionDB.CONN();
+            OpenCONN();
             if (!KiemTraTonTaiTrongChiTietHoaDon(strMaHoaDon))
                 return;
             String query_SQL = "SELECT * FROM tblChiTietHDX WHERE MaHD ='" + strMaHoaDon + "'";
@@ -240,7 +252,7 @@ public class HoaDonXuatDAO {
             query_SQL = "DELETE tblChiTietHDX WHERE MaHD='" + strMaHoaDon + "'";
             statement = _con.prepareStatement(query_SQL);
             statement.executeUpdate();
-            _con.close();
+            CloseCONN();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -255,7 +267,7 @@ public class HoaDonXuatDAO {
             if (!_rs.next()) {
                 CloseCONN();
                 return false;
-            }else {
+            } else {
                 CloseCONN();
                 return true;
 
@@ -275,7 +287,7 @@ public class HoaDonXuatDAO {
             if (!_rs.isBeforeFirst()) {
                 CloseCONN();
                 return false;
-            } else{
+            } else {
                 CloseCONN();
                 return true;
             }
@@ -306,14 +318,14 @@ public class HoaDonXuatDAO {
         String query_SQL = "SELECT COUNT(MaKH) FROM tblHoaDonXuat WHERE MaKH='" + maKH + "' AND NgayXuat > '2019-02-05'";
         int intTong = 0;
         try {
-            _con = connectionDB.CONN();
+            OpenCONN();
             //XoaAllHoaDonXuatNull();
             statement = _con.prepareStatement(query_SQL);
             _rs = statement.executeQuery();
             while (_rs.next()) {
                 intTong = _rs.getInt(1);
             }
-            _con.close();
+           CloseCONN();
         } catch (SQLException _ex) {
             _ex.printStackTrace();
         }
@@ -322,7 +334,7 @@ public class HoaDonXuatDAO {
 
     public void UploadFilePDFToDatabase(String filePath) {
         try {
-            _con = connectionDB.CONN();
+            OpenCONN();
             File pdfFile = new File(filePath);
             byte[] pdfData = new byte[(int) pdfFile.length()];
             DataInputStream dis = new DataInputStream(new FileInputStream(pdfFile));
@@ -333,7 +345,7 @@ public class HoaDonXuatDAO {
             ps.setString(1, strMaHD);
             ps.setBytes(2, pdfData);  // byte[] array
             ps.executeUpdate();
-            _con.close();
+            CloseCONN();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (SQLException e) {
@@ -350,7 +362,7 @@ public class HoaDonXuatDAO {
         return fileName;
     }
 
-    public void XoaFilePDFTheoMaHD(String strMaHD){
+    public void XoaFilePDFTheoMaHD(String strMaHD) {
         String deletePDF = "DELETE FROM SavePDFTable WHERE MaHD ='" + strMaHD + "'";
         OpenCONN();
         try {

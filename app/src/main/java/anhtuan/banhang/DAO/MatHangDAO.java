@@ -3,6 +3,7 @@ package anhtuan.banhang.DAO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 import anhtuan.banhang.DTO.MatHang;
@@ -17,9 +18,26 @@ public class MatHangDAO {
     ArrayList<MatHang> arrMatHang = new ArrayList<MatHang>();
     MatHang _matHang;
 
+    public void OpenCONN() {
+        try {
+            if (_con.isClosed())
+                _con = connectionDB.CONN();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void CloseCONN() {
+        try {
+            _con.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public ArrayList<MatHang> getArrMatHang(String _maLoai) {
         try {
-            _con = connectionDB.CONN();
+            OpenCONN();
             String sqlSelect = "SELECT * FROM tblMatHang WHERE SUBSTRING(MaMatH,1,3) = '" + _maLoai + "'";
             if (_maLoai == "DAU")
                 sqlSelect = "SELECT * FROM tblMatHang WHERE SUBSTRING(MaMatH,1,3) = 'DAI' OR SUBSTRING(MaMatH,1,3) = 'DAU'";
@@ -35,7 +53,7 @@ public class MatHangDAO {
 
                 arrMatHang.add(_matHang);
             }
-            _con.close();
+            CloseCONN();
         } catch (Exception ex) {
             _ex = "Exceptions";
         }
@@ -44,7 +62,7 @@ public class MatHangDAO {
 
     public MatHang getMatHangByID(String mhMH) {
         try {
-            _con = connectionDB.CONN();
+            OpenCONN();
             String sqlSelect = "SELECT * FROM tblMatHang WHERE MaMatH = '" + mhMH + "'";
             PreparedStatement statement = _con.prepareStatement(sqlSelect);
             _rs = statement.executeQuery();
@@ -56,7 +74,7 @@ public class MatHangDAO {
                 _matHang.setSoLuong(Float.parseFloat(_rs.getString("SoLuong")));
                 _matHang.setDonGia(Float.parseFloat(_rs.getString("DonGia")));
             }
-            _con.close();
+           CloseCONN();
         } catch (Exception ex) {
             _ex = "Exceptions";
         }
@@ -66,7 +84,7 @@ public class MatHangDAO {
     public String layGiaBanTheoMHvaKH(String maMatHang, String _strMaKhachHang) {
         String strGiaban = "";
         try {
-            _con = connectionDB.CONN();
+            OpenCONN();
             String selectGiaTheoKH = "SELECT [tblGiaBan].[GiaBan] FROM [tblGiaBan] INNER JOIN [tblMatHang] ON [tblMatHang].MaMatH = [tblGiaBan].MaMatH WHERE [MaKH]='" + _strMaKhachHang + "' AND [tblMatHang].MaMatH = '" + maMatHang + "'";
             PreparedStatement statement = _con.prepareStatement(selectGiaTheoKH);
             _rs = statement.executeQuery();
@@ -74,7 +92,7 @@ public class MatHangDAO {
             while (_rs.next()) {
                 strGiaban = _rs.getString("GiaBan");
             }
-            _con.close();
+            CloseCONN();
         } catch (Exception ex) {
             _ex = "Exceptions";
         }
