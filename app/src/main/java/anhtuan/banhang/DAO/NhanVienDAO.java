@@ -36,12 +36,10 @@ public class NhanVienDAO {
         }
     }
 
-    public ArrayList<NhanVien> getArrNhanVien(String mayCua) {
+    public ArrayList<NhanVien> getArrNhanVien() {
         OpenCONN();
         try {
             String sqlSelect = "SELECT * FROM tblNhanVien ORDER BY MaNhanVien DESC";
-            if (mayCua.equals("trang"))
-                sqlSelect = "SELECT * FROM tblNhanVien";
             PreparedStatement statement = _con.prepareStatement(sqlSelect);
             _rs = statement.executeQuery();
             arrNhanVien.clear();

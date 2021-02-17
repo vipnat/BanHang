@@ -34,13 +34,20 @@ public class ThuChiDAO {
             e.printStackTrace();
         }
     }
+
     ArrayList<ThuChi> arayThuChi = new ArrayList<ThuChi>();
     ThuChi _thuChi;
 
-    public ArrayList<ThuChi> getArayThuChi() {
+    public ArrayList<ThuChi> getArayThuChi(String strYear) {
         try {
+            String strSQL = "";
+            if (strYear.equals("ALL"))
+                strSQL = "";
+            else
+                strSQL = " WHERE Ngay >= '2021-02-16'";
+
             OpenCONN();
-            String sqlSelect = "SELECT * FROM  tblThuChi ORDER BY Ngay DESC,Id DESC";
+            String sqlSelect = "SELECT * FROM  tblThuChi" + strSQL + " ORDER BY Ngay DESC,Id DESC";
             PreparedStatement pre = _con.prepareStatement(sqlSelect);
             _rs = pre.executeQuery();
             while (_rs.next()) {
@@ -61,11 +68,47 @@ public class ThuChiDAO {
         return arayThuChi;
     }
 
-    public ArrayList<ThuChi> getArayThuChi(Date dateStart, Date dateEnd) {
+    public ArrayList<ThuChi> getArayThuChi(Date dateStart, Date dateEnd, String strYear) {
         SimpleDateFormat frmDate = new SimpleDateFormat("yyyy-MM-dd");
         try {
+            String strSQL = "";
+            if (strYear.equals("ALL"))
+                strSQL = "";
+            else
+                strSQL = " AND Ngay >= '2021-02-16'";
+
             OpenCONN();
-            String sqlSelect = "SELECT * FROM  tblThuChi WHERE Ngay BETWEEN '" + frmDate.format(dateStart) + "' AND '" + frmDate.format(dateEnd) + "' ORDER BY Ngay DESC, Id DESC";
+            String sqlSelect = "SELECT * FROM  tblThuChi WHERE Ngay BETWEEN '" + frmDate.format(dateStart) + "' AND '" + frmDate.format(dateEnd) + strSQL + "' ORDER BY Ngay DESC, Id DESC";
+            PreparedStatement pre = _con.prepareStatement(sqlSelect);
+            _rs = pre.executeQuery();
+            while (_rs.next()) {
+                _thuChi = new ThuChi();
+                _thuChi.setId(_rs.getInt("Id"));
+                _thuChi.setMaHD(_rs.getString("MaHD"));
+                _thuChi.setNgay(_rs.getDate("Ngay"));
+                _thuChi.setSoTien(_rs.getInt("SoTien"));
+                _thuChi.setGhiChu(_rs.getString("GhiChu"));
+                _thuChi.setThu1Chi0(_rs.getInt("Thu1Chi0") == 1 ? true : false);
+                _thuChi.setTienTrongNha(_rs.getDouble("TienTrongNha"));
+                arayThuChi.add(_thuChi);
+            }
+            CloseCONN();
+        } catch (Exception ex) {
+            _ex = "Exceptions";
+        }
+        return arayThuChi;
+    }
+
+    public ArrayList<ThuChi> getArayThuChi(String textSearch, String strYear) {
+        try {
+            String strSQL = "";
+            if (strYear.equals("ALL"))
+                strSQL = "";
+            else
+                strSQL = " AND Ngay >= '2021-02-16'";
+
+            OpenCONN();
+            String sqlSelect = "SELECT * FROM tblThuChi WHERE GhiChu LIKE N'%" + textSearch + "%'"+strSQL+" ORDER BY Ngay DESC, Id DESC";
             PreparedStatement pre = _con.prepareStatement(sqlSelect);
             _rs = pre.executeQuery();
             while (_rs.next()) {
@@ -105,6 +148,18 @@ public class ThuChiDAO {
         String strDelete = "DELETE FROM [dbo].[tblThuChi] WHERE Id = '" + thuChi.getId() + "'";
         if (!thuChi.getThu1Chi0())
             strDelete = "DELETE FROM [dbo].[tblThuChi] WHERE Ngay = '" + thuChi.getNgay() + "' AND Id = '" + thuChi.getId() + "'";
+        try {
+            statement = _con.prepareStatement(strDelete);
+            statement.executeUpdate();
+            CloseCONN();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void XoaThuChiTrungLap(String strMaHD) {
+        OpenCONN();
+        String strDelete = "DELETE FROM [dbo].[tblThuChi] WHERE [MaHD] = '" + strMaHD + "'";
         try {
             statement = _con.prepareStatement(strDelete);
             statement.executeUpdate();

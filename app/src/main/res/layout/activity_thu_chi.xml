@@ -66,6 +66,13 @@
                     android:checked="false"
                     android:text="+$"
                     android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/spnDate"
+                    android:layout_width="109dp"
+                    android:layout_height="wrap_content" />
+
+
             </TableRow>
 
             <TableRow
@@ -90,6 +97,7 @@
                     android:background="@android:color/transparent"
                     android:scaleType="fitCenter"
                     app:srcCompat="@drawable/image_add" />
+
             </TableRow>
 
             <TableRow
@@ -99,8 +107,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_span="2"
-                    android:orientation="horizontal">
+                    android:layout_span="2">
 
                     <ImageView
                         android:id="@+id/btnSearch"
@@ -119,6 +126,16 @@
                         android:focusable="false"
                         android:hint="Từ Ngày"
                         android:inputType="date" />
+                    <EditText
+                        android:id="@+id/txtSearch"
+                        android:layout_width="170dp"
+                        android:layout_height="wrap_content"
+                        android:clickable="true"
+                        android:ems="10"
+                        android:hint="Tim Theo Text"
+                        android:inputType="text"
+                        android:visibility="gone"
+                        />
 
                     <EditText
                         android:id="@+id/txtDate2"
@@ -130,7 +147,6 @@
                         android:focusable="false"
                         android:hint="Đến Ngày"
                         android:inputType="date" />
-
                 </LinearLayout>
 
             </TableRow>
@@ -188,7 +204,16 @@
                                 android:text="0"
                                 android:textColor="@android:color/holo_red_dark"
                                 android:textStyle="bold" />
+
                         </LinearLayout>
+                        <CheckBox
+                            android:id="@+id/cbxSearch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="99"
+                            android:checked="false"
+                            android:text="Tìm Theo Text"
+                            android:textStyle="bold" />
                     </LinearLayout>
                 </LinearLayout>
             </TableRow>

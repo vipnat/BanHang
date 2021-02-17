@@ -317,9 +317,7 @@ public class XuatHoaDonActivity extends AppCompatActivity {
                     lblNoCu.setText("");
                 if (intSelectSpinMHPosition > 0) // Đã Chọn Mặt Hàng
                     LayGiaBanLenEditText();
-
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> arg0) {
             }
@@ -533,10 +531,11 @@ public class XuatHoaDonActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (Double.parseDouble(_khachHang.getNoCu()) > 0) {
                     if (tongTienBan.equals(new DecimalFormat("###,###").format(dsMatHang.getTongTienList()).replaceAll(",", "."))) {
-                        tongTienBan = new DecimalFormat("###,###").format(Double.parseDouble(tongTienBan) + Double.parseDouble(_khachHang.getNoCu()));
+                        tongTienBan = Double.parseDouble(tongTienBan) + Double.parseDouble(_khachHang.getNoCu()) + "";
                     } else {
-                        tongTienBan = new DecimalFormat("###,###").format(dsMatHang.getTongTienList()).replaceAll(",", ".");
+                        tongTienBan = dsMatHang.getTongTienList() + "";
                     }
+                    //lblTongTien.setText("+$:" + new DecimalFormat("###,###").format(tongTienBan));
                     lblTongTien.setText("+$:" + tongTienBan);
                 }
             }
@@ -558,6 +557,8 @@ public class XuatHoaDonActivity extends AppCompatActivity {
     }
 
     private void ThemThuChiVaoDatabase() {
+        // Xóa Thu Chi Cùng Mã Hóa Đơn Nếu Có.
+        thuChiDAO.XoaThuChiTrungLap(strMaHoaDon);
         int tienTra = Integer.parseInt(_txtTraTien.getText().toString());
         double tienTrongNhaMoiNhat = thuChiDAO.LayTienTrongNhaMoiNhat();
         // Tạo Thu Chi

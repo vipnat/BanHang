@@ -35,7 +35,7 @@ public class HoaDonXuatDAO {
     public void OpenCONN() {
         try {
             if (_con.isClosed())
-            _con = connectionDB.CONN();
+                _con = connectionDB.CONN();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -171,17 +171,21 @@ public class HoaDonXuatDAO {
     }
 
     public boolean InsertDuLieuMuaDB(ArrayList<MatHang> arayListView, HoaDonXuat hdx, KhachHang kh) {
+        MatHangDAO mhDao = new MatHangDAO();
+        float soLuongGoc = 0;
         OpenCONN();
         try {
             String query_SQL = "";
             for (MatHang mh : arayListView) {
+
                 //Thêm vào bảng tblChiTietHDX
                 query_SQL = "INSERT INTO tblChiTietHDX(MaMatH,MaHD,SoLuong,DonGia) values(N'" + mh.getMaMatH() + "',N'" + hdx.getMaHD() + "'," + mh.getSoLuong() + "," + mh.getDonGia() + ")";
                 statement = _con.prepareStatement(query_SQL);
                 statement.executeUpdate();
 
+                soLuongGoc = LaySoLuongGocTheoMaMH(mh.getMaMatH());
                 //Cập nhật lại Số Lượng cho bảng tblMatHang (bớt số lượng mặt hàng)
-                query_SQL = "update tblMatHang set SoLuong=SoLuong-" + mh.getSoLuong() + " where MaMatH=N'" + mh.getMaMatH() + "'";
+                query_SQL = "update tblMatHang set SoLuong=" + (soLuongGoc - mh.getSoLuong()) + " where MaMatH=N'" + mh.getMaMatH() + "'";
                 statement = _con.prepareStatement(query_SQL);
                 statement.executeUpdate();
 
@@ -297,25 +301,23 @@ public class HoaDonXuatDAO {
         }
     }
 
-    public String LayMaHoaDonMoiNhat() {
-        String query_SQL = "SELECT TOP 1 MaHD FROM tblHoaDonXuat ORDER BY NgayXuat DESC,MaHD DESC";
-        String strMaHD = "";
-        OpenCONN();
+    public Float LaySoLuongGocTheoMaMH(String maMH) {
+        String query_SQL = "SELECT TOP 1 SoLuong FROM tblMatHang WHERE MaMatH = '" + maMH + "'";
+        float fSoLuong = 0;
         try {
             statement = _con.prepareStatement(query_SQL);
             _rs = statement.executeQuery();
             while (_rs.next()) {
-                strMaHD = _rs.getString("MaHD");
+                fSoLuong = _rs.getFloat("SoLuong");
             }
-            CloseCONN();
         } catch (SQLException _ex) {
             _ex.printStackTrace();
         }
-        return strMaHD;
+        return fSoLuong;
     }
 
     public int LayTongSoHoaDonTheoKH(String maKH) {
-        String query_SQL = "SELECT COUNT(MaKH) FROM tblHoaDonXuat WHERE MaKH='" + maKH + "' AND NgayXuat > '2019-02-05'";
+        String query_SQL = "SELECT COUNT(MaKH) FROM tblHoaDonXuat WHERE MaKH='" + maKH + "' AND NgayXuat > '2021-02-16'";
         int intTong = 0;
         try {
             OpenCONN();
@@ -325,7 +327,7 @@ public class HoaDonXuatDAO {
             while (_rs.next()) {
                 intTong = _rs.getInt(1);
             }
-           CloseCONN();
+            CloseCONN();
         } catch (SQLException _ex) {
             _ex.printStackTrace();
         }

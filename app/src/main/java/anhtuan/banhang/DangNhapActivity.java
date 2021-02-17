@@ -106,12 +106,8 @@ public class DangNhapActivity extends AppCompatActivity {
 
         _spinNhanVien = (Spinner) findViewById(R.id.spnNhanVien);
 
-        String mayCua = "trang";
-        int chieuRong = getScreenWidth();
-        if (chieuRong == 1080 || chieuRong == 720)
-            mayCua = "tuan";
         // Cấu Hình Cho Spiner Khách Hàng
-        arrayNhanVien = _nhanVienDao.getArrNhanVien(mayCua);
+        arrayNhanVien = _nhanVienDao.getArrNhanVien();
         adapterNhanVien = new ArrayAdapter<NhanVien>(this, android.R.layout.simple_spinner_item, arrayNhanVien);
         adapterNhanVien.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         _spinNhanVien.setAdapter(adapterNhanVien);

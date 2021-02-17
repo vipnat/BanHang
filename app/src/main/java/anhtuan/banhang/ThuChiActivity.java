@@ -15,11 +15,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,12 +45,16 @@ public class ThuChiActivity extends AppCompatActivity {
     EditText _soTien;
     EditText _ghiChu;
     EditText _tuNgay;
+    EditText _txtSearch;
     EditText _denNgay;
     EditText _ngayNhap;
     TextView _lblTongThuChi;
     TextView _lblTienTrongNha;
 
+    Spinner _spinDate;
     CheckBox _cbThuChi;
+    CheckBox _cbxSearch;
+
     ImageView _btnAddThuChi;
     ImageView _btnSearch;
 
@@ -65,6 +72,12 @@ public class ThuChiActivity extends AppCompatActivity {
     DecimalFormat tienformatter = new DecimalFormat("###,###,###");
     SimpleDateFormat frmDateddMMyy = new SimpleDateFormat("dd/MM/yy");
 
+    String arr[] = {
+            "2021",
+            "ALL"};
+
+    String strYear = "2021";
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,15 +94,28 @@ public class ThuChiActivity extends AppCompatActivity {
         _lblTienTrongNha = (TextView) findViewById(R.id.lblTienTrongNha);
         _cbThuChi = (CheckBox) findViewById(R.id.cbxThuChi);
         _btnAddThuChi = (ImageView) findViewById(R.id.btnAddThuChi);
+        _cbxSearch = (CheckBox) findViewById(R.id.cbxSearch);
 
         _tuNgay = (EditText) findViewById(R.id.txtDate1);
         _denNgay = (EditText) findViewById(R.id.txtDate2);
+        _txtSearch = (EditText) findViewById(R.id.txtSearch);
         _ngayNhap = (EditText) findViewById(R.id.txtNgayNhap);
         _btnSearch = (ImageView) findViewById(R.id.btnSearch);
 
+        _spinDate = (Spinner) findViewById(R.id.spnDate);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>
+                (
+                        this,
+                        android.R.layout.simple_spinner_item,
+                        arr
+                );
+        adapter.setDropDownViewResource(android.R.layout.simple_list_item_single_choice);
+        _spinDate.setAdapter(adapter);
+
+
         _listThuChi = (ListView) findViewById(R.id._listviewThuChi);
         // Cấu Hình Cho ListView
-        arayListThuChi = thuChiDAO.getArayThuChi();
+        arayListThuChi = thuChiDAO.getArayThuChi(strYear);
         HienThiTongThuChiTheoList(arayListThuChi);
         adapterThuChi = new ListViewThuChiAdapter( //Khởi tạo đối tượng adapter và gán Data source
                 this, R.layout.item_thu_chi,
@@ -99,7 +125,7 @@ public class ThuChiActivity extends AppCompatActivity {
         Date date = new Date();
         _ngayNhap.setText(frmDateddMMyy.format(date));
 
-        _lblTienTrongNha.setText(tienformatter.format(thuChiDAO.LayTienTrongNhaMoiNhat()*1000));
+        _lblTienTrongNha.setText(tienformatter.format(thuChiDAO.LayTienTrongNhaMoiNhat() * 1000));
     }
 
     public void showDialog() throws Exception {
@@ -119,12 +145,12 @@ public class ThuChiActivity extends AppCompatActivity {
 
                 // Cập nhập lại
                 thuChiDAO.UpdateThuChiTrongDatabase(thu_Chi);
-                _lblTienTrongNha.setText(tienformatter.format(thu_Chi.getTienTrongNha()*1000));
+                _lblTienTrongNha.setText(tienformatter.format(thu_Chi.getTienTrongNha() * 1000));
 
                 //xóa danh sách cũ
                 arayListThuChi.clear();
                 //Mỗi lần xóa xong thì cập nhập lại ListView
-                arayListThuChi = thuChiDAO.getArayThuChi();
+                arayListThuChi = thuChiDAO.getArayThuChi(strYear);
                 HienThiTongThuChiTheoList(arayListThuChi);
                 //cập nhật lại ListView
                 adapterThuChi.notifyDataSetChanged();
@@ -207,22 +233,27 @@ public class ThuChiActivity extends AppCompatActivity {
         _btnSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    dateTuNgay = frmDateddMMyy.parse(_tuNgay.getText().toString());
-                } catch (ParseException e) {
-                    Toast.makeText(ThuChiActivity.this, "Ngày Chưa Đúng.", Toast.LENGTH_SHORT).show();
-                    return;
+                if (_cbxSearch.isChecked()) {
+                    //xóa danh sách cũ
+                    arayListThuChi.clear();
+                    arayListThuChi = thuChiDAO.getArayThuChi(_txtSearch.getText().toString());
+                } else {
+                    try {
+                        dateTuNgay = frmDateddMMyy.parse(_tuNgay.getText().toString());
+                    } catch (ParseException e) {
+                        Toast.makeText(ThuChiActivity.this, "Ngày Chưa Đúng.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    try {
+                        dateDenNgay = frmDateddMMyy.parse(_denNgay.getText().toString());
+                    } catch (ParseException e) {
+                        dateDenNgay = new Date();
+                    }
+                    //xóa danh sách cũ
+                    arayListThuChi.clear();
+                    arayListThuChi = thuChiDAO.getArayThuChi(dateTuNgay, dateDenNgay,strYear);
                 }
-                try {
-                    dateDenNgay = frmDateddMMyy.parse(_denNgay.getText().toString());
-                } catch (ParseException e) {
-                    dateDenNgay = new Date();
-                }
-
-                //xóa danh sách cũ
-                arayListThuChi.clear();
-                arayListThuChi = thuChiDAO.getArayThuChi(dateTuNgay, dateDenNgay);
-                _lblTienTrongNha.setText(tienformatter.format(arayListThuChi.get(0).getTienTrongNha()*1000));
+                _lblTienTrongNha.setText(tienformatter.format(arayListThuChi.get(0).getTienTrongNha() * 1000));
                 HienThiTongThuChiTheoList(arayListThuChi);
                 //cập nhật lại ListView
                 adapterThuChi.notifyDataSetChanged();
@@ -272,13 +303,13 @@ public class ThuChiActivity extends AppCompatActivity {
                 Toast.makeText(ThuChiActivity.this, "Đã Thêm.", Toast.LENGTH_SHORT).show();
                 //xóa danh sách cũ
                 arayListThuChi.clear();
-                arayListThuChi = thuChiDAO.getArayThuChi();
+                arayListThuChi = thuChiDAO.getArayThuChi(strYear);
                 HienThiTongThuChiTheoList(arayListThuChi);
                 //cập nhật lại ListView
                 adapterThuChi.notifyDataSetChanged();
                 _soTien.setText("");
                 _ghiChu.setText("");
-                _lblTienTrongNha.setText(tienTrongNha >= 0 ? tienformatter.format(tienTrongNha*1000) + "" : 0 + "");
+                _lblTienTrongNha.setText(tienTrongNha >= 0 ? tienformatter.format(tienTrongNha * 1000) + "" : 0 + "");
             }
         });
 
@@ -350,6 +381,49 @@ public class ThuChiActivity extends AppCompatActivity {
             }
         });
 
+        _cbxSearch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                String strHienThi = "";
+                if (_cbxSearch.isChecked()) {
+                    strHienThi = "Tìm Theo Text.";
+                    _txtSearch.setVisibility(View.VISIBLE);
+                    _tuNgay.setVisibility(View.GONE);
+                } else {
+                    strHienThi = "Tìm Theo Ngay.";
+                    _txtSearch.setVisibility(View.GONE);
+                    _tuNgay.setVisibility(View.VISIBLE);
+                }
+                Toast.makeText(ThuChiActivity.this, strHienThi, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        _spinDate.setOnItemSelectedListener(new MyProcessEvent());
+    }
+
+    //Class tạo sự kiện
+    private class MyProcessEvent implements
+            AdapterView.OnItemSelectedListener {
+        //Khi có chọn lựa thì vào hàm này
+        public void onItemSelected(AdapterView<?> arg0,
+                                   View arg1,
+                                   int arg2,
+                                   long arg3) {
+            //arg2 là phần tử được chọn trong data source
+            strYear = arr[arg2];
+
+            //xóa danh sách cũ
+            arayListThuChi.clear();
+            arayListThuChi = thuChiDAO.getArayThuChi(strYear);
+            _lblTienTrongNha.setText(tienformatter.format(arayListThuChi.get(0).getTienTrongNha() * 1000));
+            HienThiTongThuChiTheoList(arayListThuChi);
+            //cập nhật lại ListView
+            adapterThuChi.notifyDataSetChanged();
+
+        }
+        //Nếu không chọn gì cả
+        public void onNothingSelected(AdapterView<?> arg0) {
+        }
     }
 
     String VietHoaChuCaiDau(String name) {
