@@ -16,6 +16,15 @@
         android:scaleType="centerCrop"
         app:srcCompat="@drawable/image_nen_login" />
 
+    <ImageView
+        android:id="@+id/btnThuChi"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="29dp"
+        app:srcCompat="@drawable/image_thuchi" />
+
     <LinearLayout
         android:id="@+id/linearLogin"
         android:layout_width="match_parent"
@@ -49,6 +58,44 @@
             android:layout_gravity="center_horizontal"
             android:contentDescription="@null"
             app:srcCompat="@drawable/image_button_login" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingTop="20dp"
+            android:text="Xem Lại Hóa Đơn"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="25dp"
+            android:orientation="horizontal">
+
+            <Spinner
+                android:id="@+id/spnHoaDonXuat"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/txtTenKH"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:text="TextView" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btn_print"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:layout_marginLeft="0dp"
+            android:layout_marginTop="0dp"
+            android:background="@android:color/transparent"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/image_print" />
 
     </LinearLayout>
 

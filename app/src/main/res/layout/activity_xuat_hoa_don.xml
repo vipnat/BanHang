@@ -62,6 +62,13 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Đầu-Đai" />
+
+            <CheckBox
+                android:id="@+id/cbxAdd"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="+" />
         </RadioGroup>
 
 
@@ -156,7 +163,6 @@
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentEnd="true"
                 android:layout_weight="9">
-
             </ListView>
 
             <LinearLayout
@@ -221,6 +227,7 @@
                     android:background="@android:color/transparent"
                     android:scaleType="fitCenter"
                     app:srcCompat="@drawable/image_print" />
+
             </LinearLayout>
 
         </LinearLayout>

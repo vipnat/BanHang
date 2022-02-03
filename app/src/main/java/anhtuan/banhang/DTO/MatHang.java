@@ -1,6 +1,7 @@
 package anhtuan.banhang.DTO;
 
 
+import java.text.DecimalFormat;
 import java.util.Comparator;
 
 public class MatHang {
@@ -53,7 +54,7 @@ public class MatHang {
     }
 
     public String toString() {
-        return this.MaMatH+" - "+this.TenMatH;
+        return this.MaMatH+"-"+ (new DecimalFormat("##")).format(this.SoLuong) + "_" +this.TenMatH;
     }
 
 

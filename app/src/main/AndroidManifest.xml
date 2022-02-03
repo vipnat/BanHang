@@ -25,6 +25,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".XuatHoaDonActivity"/>
+        <activity android:name=".ThuChiActivity" />
 
     </application>
 </manifest>

@@ -19,9 +19,27 @@ public class NhanVienDAO {
     ArrayList<NhanVien> arrNhanVien = new ArrayList<NhanVien>();
     NhanVien nhanVien;
 
-    public ArrayList<NhanVien> getArrNhanVien() {
+    public void OpenCONN() {
         try {
-            String sqlSelect = "SELECT * FROM tblNhanVien";
+            if (_con.isClosed())
+                _con = connectionDB.CONN();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void CloseCONN() {
+        try {
+            _con.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public ArrayList<NhanVien> getArrNhanVien() {
+        OpenCONN();
+        try {
+            String sqlSelect = "SELECT * FROM tblNhanVien ORDER BY MaNhanVien DESC";
             PreparedStatement statement = _con.prepareStatement(sqlSelect);
             _rs = statement.executeQuery();
             arrNhanVien.clear();
@@ -33,6 +51,7 @@ public class NhanVienDAO {
                 nhanVien.setDienThoai(_rs.getString("DienThoai"));
                 arrNhanVien.add(nhanVien);
             }
+            CloseCONN();
         } catch (Exception ex) {
             _ex = "Exceptions";
         }
@@ -41,6 +60,7 @@ public class NhanVienDAO {
 
     public NhanVien LayThongTinNhanVienTheoMa(String maNV) {
         String sqlSelect = "SELECT * FROM tblNhanVien Where MaNhanVien ='" + maNV + "'";
+        OpenCONN();
         try {
             PreparedStatement statement = _con.prepareStatement(sqlSelect);
             _rs = statement.executeQuery();
@@ -51,6 +71,7 @@ public class NhanVienDAO {
                 nhanVien.setDiaChi(_rs.getString("DiaChi"));
                 nhanVien.setDienThoai(_rs.getString("DienThoai"));
             }
+            CloseCONN();
         } catch (SQLException _ex) {
             _ex.printStackTrace();
         }

@@ -1,8 +1,13 @@
 package anhtuan.banhang.DAO;
 
+import android.os.Environment;
+
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import java.sql.Connection;
@@ -27,11 +32,54 @@ public class HoaDonXuatDAO {
     ResultSet _rs;
     PreparedStatement statement;
 
+    public void OpenCONN() {
+        try {
+            if (_con.isClosed())
+                _con = connectionDB.CONN();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void CloseCONN() {
+        try {
+            _con.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    ArrayList<HoaDonXuat> arrHoaDonXuat = new ArrayList<HoaDonXuat>();
+    HoaDonXuat _hoaDonXuat;
+
+    public ArrayList<HoaDonXuat> arrHoaDonXuat() {
+        try {
+            OpenCONN();
+            String sqlSelect = "SELECT TOP 100 * FROM  tblHoaDonXuat ORDER BY NgayXuat DESC, MaHD DESC";
+            PreparedStatement pre = _con.prepareStatement(sqlSelect);
+            _rs = pre.executeQuery();
+            while (_rs.next()) {
+                _hoaDonXuat = new HoaDonXuat();
+                _hoaDonXuat.setMaHD(_rs.getString("MaHD"));
+                _hoaDonXuat.setMaNhanVien(_rs.getString("MaNhanVien"));
+                _hoaDonXuat.setNgayXuat(_rs.getDate("NgayXuat"));
+                _hoaDonXuat.setTongTien(_rs.getDouble("TongTien"));
+                _hoaDonXuat.setMaKH(_rs.getString("MaKH"));
+                _hoaDonXuat.setTongTienGoc(_rs.getDouble("TongTienGoc"));
+                arrHoaDonXuat.add(_hoaDonXuat);
+            }
+            CloseCONN();
+        } catch (Exception ex) {
+            _ex = "Exceptions";
+        }
+        return arrHoaDonXuat;
+    }
 
     public String LayMaHoaDonTheoNgay(String DayMonthYear) {
         String MaHD = "";
         int maSo = 1;
         String selectMaHoaDon = "SELECT MaHD FROM tblHoaDonXuat";
+        OpenCONN();
         try {
             statement = _con.prepareStatement(selectMaHoaDon);
             _rs = statement.executeQuery();
@@ -49,7 +97,7 @@ public class HoaDonXuatDAO {
                 }
                 MaHD = DayMonthYear + (new DecimalFormat("#000")).format(maSo);
             }
-
+            CloseCONN();
         } catch (Exception ex) {
             _ex = "Exceptions";
         }
@@ -59,14 +107,18 @@ public class HoaDonXuatDAO {
     public void XoaAllHoaDonXuatNull() {
         String sqlQuery = "SELECT MaHD FROM tblHoaDonXuat WHERE NOT EXISTS (SELECT MaHD FROM tblChiTietHDX WHERE " +
                 "tblHoaDonXuat.MaHD = tblChiTietHDX.MaHD)";  // Có Trong Hóa Đơn Mà Không Có Chi Tiết. (HĐ Ảo)
+        OpenCONN();
         try {
             statement = _con.prepareStatement(sqlQuery);
             _rs = statement.executeQuery();
             while (_rs.next()) {
-                String deleteHDX = "DELETE FROM tblHoaDonXuat WHERE MaHD ='" + _rs.getString("MaHD") + "'";
+                String strMaHD = _rs.getString("MaHD");
+                String deleteHDX = "DELETE FROM tblHoaDonXuat WHERE MaHD ='" + strMaHD + "'";
                 statement = _con.prepareStatement(deleteHDX);
                 statement.executeUpdate();
+                XoaFilePDFTheoMaHD(strMaHD);
             }
+            CloseCONN();
         } catch (SQLException _ex) {
             _ex.printStackTrace();
         }
@@ -75,6 +127,7 @@ public class HoaDonXuatDAO {
     public double LayTongTienGocCuaHD(ArrayList<MatHang> listMH) {
         double tongTienGoc = 0;
         String sqlSelect = "";
+        OpenCONN();
         try {
             for (MatHang mh : listMH) {
                 sqlSelect = "SELECT (DonGia*" + mh.getSoLuong() + ")AS TongGoc FROM tblMatHang WHERE MaMatH = N'" + mh.getMaMatH() + "'";
@@ -84,6 +137,7 @@ public class HoaDonXuatDAO {
                     tongTienGoc = tongTienGoc + _rs.getDouble("TongGoc");
                 }
             }
+            CloseCONN();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -93,51 +147,58 @@ public class HoaDonXuatDAO {
     public void ThemHoaDonXuat(HoaDonXuat hdx) {
         SimpleDateFormat frmDate = new SimpleDateFormat("MM/dd/yyyy");
         String ngayBan = frmDate.format(new Date()); // Ngày Hiện Tại
-        String insertHDX = "insert into tblHoaDonXuat(MaHD,MaNhanVien,NgayXuat,GhiChu) values(N'" + hdx.getMaHD() + "',N'" + hdx.getMaNhanVien() + "',N'" + ngayBan + "',N'" + hdx.getGhiChu() + "')";
+        String insertHDX = "insert into tblHoaDonXuat(MaHD,MaNhanVien,NgayXuat,MaKH) values(N'" + hdx.getMaHD() + "',N'" + hdx.getMaNhanVien() + "',N'" + ngayBan + "',N'" + hdx.getMaKH() + "')";
+        OpenCONN();
         try {
             statement = _con.prepareStatement(insertHDX);
             statement.executeUpdate();
+            CloseCONN();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public void UpdateTTHoaDonXuat(HoaDonXuat hdx) {
-        String updateSQL = "UPDATE tblHoaDonXuat SET TongTienGoc ='" + hdx.getTongTienGoc() + "' , TongTien = '" + hdx.getTongTien() + "' WHERE MaHD='" + hdx.getMaHD() + "'";
+        String updateSQL = "UPDATE tblHoaDonXuat SET TongTienGoc ='" + hdx.getTongTienGoc() + "' , TongTien = '" + hdx.getTongTien() + "' , MaKH = '" + hdx.getMaKH() + "' WHERE MaHD='" + hdx.getMaHD() + "'";
+        OpenCONN();
         try {
             statement = _con.prepareStatement(updateSQL);
             statement.executeUpdate();
+            CloseCONN();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public boolean InsertDuLieuMuaDB(ArrayList<MatHang> arayListView, HoaDonXuat hdx, KhachHang kh) {
+        MatHangDAO mhDao = new MatHangDAO();
+        float soLuongGoc = 0;
+        OpenCONN();
         try {
             String query_SQL = "";
             for (MatHang mh : arayListView) {
+
                 //Thêm vào bảng tblChiTietHDX
-                query_SQL = "insert into tblChiTietHDX(MaMatH,MaHD,SoLuong,DonGia) values(N'" + mh.getMaMatH() + "',N'" + hdx.getMaHD() + "'," + mh.getSoLuong() + "," + mh.getDonGia() + ")";
+                query_SQL = "INSERT INTO tblChiTietHDX(MaMatH,MaHD,SoLuong,DonGia) values(N'" + mh.getMaMatH() + "',N'" + hdx.getMaHD() + "'," + mh.getSoLuong() + "," + mh.getDonGia() + ")";
                 statement = _con.prepareStatement(query_SQL);
                 statement.executeUpdate();
 
+                soLuongGoc = LaySoLuongGocTheoMaMH(mh.getMaMatH());
                 //Cập nhật lại Số Lượng cho bảng tblMatHang (bớt số lượng mặt hàng)
-                query_SQL = "update tblMatHang set SoLuong=SoLuong-" + mh.getSoLuong() + " where MaMatH=N'" + mh.getMaMatH() + "'";
+                query_SQL = "update tblMatHang set SoLuong=" + (soLuongGoc - mh.getSoLuong()) + " where MaMatH=N'" + mh.getMaMatH() + "'";
                 statement = _con.prepareStatement(query_SQL);
                 statement.executeUpdate();
 
-                // Kiểm Tra Tồn Tại Giá Bán Của Khách Hàng
-                if (!KiemTraTonTaiGiaBan(kh.getMaKH(), mh.getMaMatH())) {
-                    query_SQL = "INSERT INTO tblGiaBan([MaMatH],[MaKH],[GiaBan]) VALUES (N'" + mh.getMaMatH() + "',N'" + kh.getMaKH() + "'," + mh.getDonGia() + ")";
-                    statement = _con.prepareStatement(query_SQL);
-                    statement.executeUpdate();
-                } else {
-                    //Cập nhập giá mới cho khách hàng
-                    query_SQL = "update [tblGiaBan] set [GiaBan]=" + mh.getDonGia() + " where [MaKH]=N'" + kh.getMaKH() + "' and [MaMatH] =N'" + mh.getMaMatH() + "'";
-                    statement = _con.prepareStatement(query_SQL);
-                    statement.executeUpdate();
-                }
+               /* //Cập nhật lại giá bán theo khách
+                if (KiemTraTonTaiGiaBan(kh.getMaKH(), mh.getMaMatH()))
+                    query_SQL = "UPDATE [dbo].[tblGiaBan] SET [GiaBan] =" + mh.getDonGia() + " WHERE [MaMatH] ='" + mh.getMaMatH() + "' AND [MaKH] ='" + kh.getMaKH() + "'";
+                else
+                    query_SQL = "INSERT INTO [dbo].[tblGiaBan]([MaMatH],[MaKH],[GiaBan])VALUES(N'" + mh.getMaMatH() + "',N'" + kh.getMaKH() + "'," + mh.getDonGia() + ")";
+                statement = _con.prepareStatement(query_SQL);
+                statement.executeUpdate();
+                */
             }
+            CloseCONN();
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -145,8 +206,40 @@ public class HoaDonXuatDAO {
         }
     }
 
+    public void UpdateGiaBanTheoKhachHang(KhachHang kh, MatHang mh) {
+        String query_SQL = "";
+        // Kiểm Tra Tồn Tại Giá Bán Của Khách Hàng
+        try {
+            if (!KiemTraTonTaiGiaBan(kh.getMaKH(), mh.getMaMatH())) {
+                query_SQL = "INSERT INTO tblGiaBan([MaMatH],[MaKH],[GiaBan]) VALUES (N'" + mh.getMaMatH() + "',N'" + kh.getMaKH() + "'," + mh.getDonGia() + ")";
+            } else {
+                //Cập nhập giá mới cho khách hàng
+                query_SQL = "update [tblGiaBan] set [GiaBan]=" + mh.getDonGia() + " where [MaKH]=N'" + kh.getMaKH() + "' and [MaMatH] =N'" + mh.getMaMatH() + "'";
+            }
+            OpenCONN();
+            statement = _con.prepareStatement(query_SQL);
+            statement.executeUpdate();
+            CloseCONN();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void UpdateSoLuongMatHang(Integer soluong, String maMH) {
+        try {
+            OpenCONN();
+            String sqlUpdate = "UPDATE tblMatHang SET SoLuong = " + soluong + " WHERE MaMatH = '" + maMH + "'";
+            PreparedStatement statement = _con.prepareStatement(sqlUpdate);
+            statement.executeUpdate();
+            CloseCONN();
+        } catch (Exception ex) {
+            _ex = "Exceptions";
+        }
+    }
+
     public void DeleteDuLieuMuaDB(String strMaHoaDon) {
         try {
+            OpenCONN();
             if (!KiemTraTonTaiTrongChiTietHoaDon(strMaHoaDon))
                 return;
             String query_SQL = "SELECT * FROM tblChiTietHDX WHERE MaHD ='" + strMaHoaDon + "'";
@@ -163,21 +256,26 @@ public class HoaDonXuatDAO {
             query_SQL = "DELETE tblChiTietHDX WHERE MaHD='" + strMaHoaDon + "'";
             statement = _con.prepareStatement(query_SQL);
             statement.executeUpdate();
-
+            CloseCONN();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public boolean KiemTraTonTaiTrongChiTietHoaDon(String strMaHD) {
+        OpenCONN();
         try {
             String sqlSelect = "SELECT MaHD FROM tblChiTietHDX WHERE MaHD ='" + strMaHD + "'";
             statement = _con.prepareStatement(sqlSelect);
             _rs = statement.executeQuery();
-            if (!_rs.next())
+            if (!_rs.next()) {
+                CloseCONN();
                 return false;
-            else
+            } else {
+                CloseCONN();
                 return true;
+
+            }
         } catch (SQLException _ex) {
             _ex.printStackTrace();
             return false;
@@ -185,91 +283,124 @@ public class HoaDonXuatDAO {
     }
 
     public boolean KiemTraTonTaiGiaBan(String strMaKH, String strMaMH) {
+        OpenCONN();
         try {
-            String sqlSelect = "SELECT COUNT(*) FROM tblGiaBan WHERE MaMatH ='" + strMaMH + "' AND MaKH = '" + strMaKH + "'";
+            String sqlSelect = "SELECT MaMatH FROM tblGiaBan WHERE MaMatH ='" + strMaMH + "' AND MaKH = '" + strMaKH + "'";
             statement = _con.prepareStatement(sqlSelect);
             _rs = statement.executeQuery();
             if (!_rs.isBeforeFirst()) {
+                CloseCONN();
                 return false;
-            } else
+            } else {
+                CloseCONN();
                 return true;
+            }
         } catch (SQLException _ex) {
             _ex.printStackTrace();
             return false;
         }
     }
 
-    public void UpdatePdfInDatabase(String maHD, File pathPDF) {
+    public Float LaySoLuongGocTheoMaMH(String maMH) {
+        String query_SQL = "SELECT TOP 1 SoLuong FROM tblMatHang WHERE MaMatH = '" + maMH + "'";
+        float fSoLuong = 0;
         try {
-            int fileLength = (int) pathPDF.length();
-            InputStream stream = (InputStream) new FileInputStream(pathPDF);
-            //String sqlUpdate = "UPDATE tblPDF SET HoaDonPDF = (SELECT BulkColumn FROM OPENROWSET (BULK '" + pathPDF + "', SINGLE_BLOB) a) WHERE MaHD ='" + maHD + "'";
-            String sqlUpdate = "UPDATE tblPDF SET HoaDonPDF =? WHERE MaHD = ?";
-            statement = _con.prepareStatement(sqlUpdate);
-            statement.setBlob(1, stream);
-            statement.setString(2, maHD);
-            //statement.setString(2, maHD);
-            statement.executeUpdate();
-        } catch (SQLException _ex) {
-            _ex.printStackTrace();
-        } catch (FileNotFoundException _ex) {
-            _ex.printStackTrace();
-        }
-    }
-
-    FileInputStream fis = null;
-
-    public void LuuPdfInDatabase(String maHD, File pathPDF) {
-        try {
-            File database_filename = pathPDF;
-            fis = new FileInputStream(database_filename);
-            int fileLength = (int) pathPDF.length();
-            InputStream stream = (InputStream) new FileInputStream(pathPDF);
-            //String sqlInsert = "INSERT INTO tblPDF(MaHD,HoaDonPDF) SELECT '" + maHD + "' AS MaHD,* FROM OPENROWSET(BULK ?, SINGLE_BLOB) AS HoaDonPDF";
-            String sqlInsert = "INSERT INTO tblPDF(MaHD,HoaDonPDF) value ('1234321',?)";
-            statement = _con.prepareStatement(sqlInsert);
-            //statement.setString(1,maHD);
-            statement.setBinaryStream(1, fis, fileLength);
-            //statement.setAsciiStream(1, stream, fileLength);
-            statement.executeUpdate();
-        } catch (SQLException _ex) {
-            _ex.printStackTrace();
-        } catch (FileNotFoundException _ex) {
-            _ex.printStackTrace();
-        }
-    }
-
-
-    protected void Upload(File filePath) {
-        /*
-        try {
-            String filename = Path.GetFileNa(FileUpload1.PostedFile.FileName);
-            string contentType = FileUpload1.PostedFile.ContentType;
-            InputStream stream = (InputStream) new FileInputStream(filePath);
-
-                    byte[] allBytes = Files.readAllBytes(Paths.get(filePathi));
-                    string constr = ConfigurationManager.ConnectionStrings["constr"].ConnectionString;
-                    using (SqlConnection con = new SqlConnection(constr))
-                    {
-                        string query = "insert into tblFiles values (@Name, @ContentType, @Data)";
-                        using (SqlCommand cmd = new SqlCommand(query))
-                        {
-                            cmd.Connection = con;
-                            cmd.Parameters.AddWithValue("@Name", filename);
-                            cmd.Parameters.AddWithValue("@ContentType", contentType);
-                            cmd.Parameters.AddWithValue("@Data", bytes);
-                            con.Open();
-                            cmd.ExecuteNonQuery();
-                            con.Close();
-                        }
-                    }
-                }
+            statement = _con.prepareStatement(query_SQL);
+            _rs = statement.executeQuery();
+            while (_rs.next()) {
+                fSoLuong = _rs.getFloat("SoLuong");
             }
-            Response.Redirect(Request.Url.AbsoluteUri);
-        } catch (FileNotFoundException e) {
+        } catch (SQLException _ex) {
+            _ex.printStackTrace();
+        }
+        return fSoLuong;
+    }
+
+    public int LayTongSoHoaDonTheoKH(String maKH) {
+        String query_SQL = "SELECT COUNT(MaKH) FROM tblHoaDonXuat WHERE MaKH='" + maKH + "' AND NgayXuat > '2021-02-16'";
+        int intTong = 0;
+        try {
+            OpenCONN();
+            //XoaAllHoaDonXuatNull();
+            statement = _con.prepareStatement(query_SQL);
+            _rs = statement.executeQuery();
+            while (_rs.next()) {
+                intTong = _rs.getInt(1);
+            }
+            CloseCONN();
+        } catch (SQLException _ex) {
+            _ex.printStackTrace();
+        }
+        return intTong + 1;
+    }
+
+    public void UploadFilePDFToDatabase(String filePath) {
+        try {
+            OpenCONN();
+            File pdfFile = new File(filePath);
+            byte[] pdfData = new byte[(int) pdfFile.length()];
+            DataInputStream dis = new DataInputStream(new FileInputStream(pdfFile));
+            dis.readFully(pdfData);  // read from file into byte[] array
+            dis.close();
+            String strMaHD = layTenFileKhongMoRong(pdfFile.getName());
+            PreparedStatement ps = _con.prepareStatement("INSERT INTO SavePDFTable (MaHD,PDFFile) VALUES (?,?)");
+            ps.setString(1, strMaHD);
+            ps.setBytes(2, pdfData);  // byte[] array
+            ps.executeUpdate();
+            CloseCONN();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
             e.printStackTrace();
         }
-        */
+    }
+
+    public static String layTenFileKhongMoRong(String fileName) {
+        if (fileName != null && fileName.length() > 0) {
+            while (fileName.contains(".")) {
+                fileName = fileName.substring(0, fileName.lastIndexOf('.'));
+            }
+        }
+        return fileName;
+    }
+
+    public void XoaFilePDFTheoMaHD(String strMaHD) {
+        String deletePDF = "DELETE FROM SavePDFTable WHERE MaHD ='" + strMaHD + "'";
+        OpenCONN();
+        try {
+            statement = _con.prepareStatement(deletePDF);
+            statement.executeQuery();
+            CloseCONN();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void XemLaiHoaDonTheoMaHD(String filePathHoaDon) {
+        OpenCONN();
+        try {
+            File pdfFile = new File(filePathHoaDon);
+            String strMaHD = layTenFileKhongMoRong(pdfFile.getName());
+            if (pdfFile.exists()) { // Kiểm tra tôn tại
+                pdfFile.delete(); // Xóa
+            }
+            String sqlGetFile = "Select PDFFile from SavePDFTable where [MaHD]='" + strMaHD + "' ";
+            statement = _con.prepareStatement(sqlGetFile);
+            _rs = statement.executeQuery();
+            while (_rs.next()) {
+                FileOutputStream fos = new FileOutputStream(pdfFile);
+                fos.write(_rs.getBytes("PDFFile"));
+                fos.close();
+            }
+            CloseCONN();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

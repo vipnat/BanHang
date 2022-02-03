@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/imageViewThuChi"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@null"
+        android:scaleType="center"
+        app:srcCompat="@drawable/image_nen_thuchi" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:background="@null"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:focusable="true"
+                android:focusableInTouchMode="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/txtSoTien"
+                        android:layout_width="50dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="Số Tiền"
+                        android:inputType="number" />
+
+                    <EditText
+                        android:id="@+id/txtNgayNhap"
+                        android:layout_width="70dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:clickable="true"
+                        android:enabled="true"
+                        android:focusable="false"
+                        android:hint="Ngay Nhap"
+                        android:inputType="date" />
+                </LinearLayout>
+
+                <CheckBox
+                    android:id="@+id/cbxThuChi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="99"
+                    android:checked="false"
+                    android:text="+$"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/spnDate"
+                    android:layout_width="109dp"
+                    android:layout_height="wrap_content" />
+
+
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <EditText
+                    android:id="@+id/txtGhiChu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ems="10"
+                    android:hint="Ghi Chú"
+                    android:inputType="text" />
+
+                <ImageButton
+                    android:id="@+id/btnAddThuChi"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="left"
+                    android:layout_weight="99"
+                    android:background="@android:color/transparent"
+                    android:scaleType="fitCenter"
+                    app:srcCompat="@drawable/image_add" />
+
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_span="2">
+
+                    <ImageView
+                        android:id="@+id/btnSearch"
+                        android:layout_width="40dp"
+                        android:layout_height="45dp"
+                        android:scaleType="fitCenter"
+                        app:srcCompat="@drawable/image_search" />
+
+                    <EditText
+                        android:id="@+id/txtDate1"
+                        android:layout_width="170dp"
+                        android:layout_height="wrap_content"
+                        android:clickable="true"
+                        android:ems="10"
+                        android:enabled="true"
+                        android:focusable="false"
+                        android:hint="Từ Ngày"
+                        android:inputType="date" />
+                    <EditText
+                        android:id="@+id/txtSearch"
+                        android:layout_width="170dp"
+                        android:layout_height="wrap_content"
+                        android:clickable="true"
+                        android:ems="10"
+                        android:hint="Tim Theo Text"
+                        android:inputType="text"
+                        android:visibility="gone"
+                        />
+
+                    <EditText
+                        android:id="@+id/txtDate2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:clickable="true"
+                        android:ems="10"
+                        android:enabled="true"
+                        android:focusable="false"
+                        android:hint="Đến Ngày"
+                        android:inputType="date" />
+                </LinearLayout>
+
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_span="2"
+                    android:orientation="vertical">
+
+                    <ListView
+                        android:id="@+id/_listviewThuChi"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_weight="9"></ListView>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/lblTongThuChi"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Tổng Thu Chi"
+                            android:textColor="@android:color/holo_red_dark"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/lblTien"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Số Tiền: "
+                                android:textColor="@android:color/holo_purple"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/lblTienTrongNha"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textColor="@android:color/holo_red_dark"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+                        <CheckBox
+                            android:id="@+id/cbxSearch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="99"
+                            android:checked="false"
+                            android:text="Tìm Theo Text"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </LinearLayout>
+            </TableRow>
+
+        </TableLayout>
+
+
+    </LinearLayout>
+
+
+</android.support.constraint.ConstraintLayout>
